@@ -4,6 +4,8 @@ import Board.Model.BoardModel;
 import Board.View.BoardView;
 import Common.Tile;
 
+import java.util.List;
+
 /**
  * The Board Controller - handles interactions
  */
@@ -29,6 +31,19 @@ public class BoardController {
         boardView.printBoard();
     }
 
+    public List<Tile> getTilesFromStack(int numTiles)
+    {
+        return boardModel.getTilesFromStack(numTiles);
+    }
+
+    public int addPlayer()
+    {
+        return boardModel.newPlayerJoinedTheGame();
+    }
+
+    /**
+     * Maps the data from the board model to the board view
+     */
     private void mapModelDataToViewData()
     {
         char[][] boardViewData = boardModel.getBoardViewData();

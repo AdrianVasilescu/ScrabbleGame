@@ -1,9 +1,13 @@
 package Player.Controller;
 
+import Common.Tile;
 import Player.Model.PlayerModel;
 import Player.View.PlayerView;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Thread.sleep;
 
 /**
  * The Player controller - handles player inputs
@@ -11,9 +15,9 @@ import java.util.HashMap;
 public class PlayerController {
 
     /**
-     * The players models
+     * The player model
      */
-    HashMap<String, PlayerModel> players;
+    PlayerModel playerModel;
 
     /**
      * Current Player view
@@ -21,15 +25,37 @@ public class PlayerController {
     PlayerView playerView;
 
     /**
-     * The id of the player currently playing it's turn
+     * Instantiates a new Player Controller
      */
-    private String currentTurnPlayerId;
+    public PlayerController(String id)
+    {
+        this.playerView = new PlayerView();
+        this.playerModel = new PlayerModel(id);
+    }
+
+    public void receiveTiles(List<Tile> newTiles)
+    {
+        playerModel.addTiles(newTiles);
+        mapModelDataToViewData();
+    }
 
     /**
-     * Handles input from a specific player
+     * Handles input from player
      */
-    public void handleInputFromPlayer(String playerId)
+    public List<Tile> getInputFromPlayer()
     {
-        // TODO
+        playerView.printPlayer();
+        ArrayList<Tile> input = new ArrayList<>();
+
+        System.out.println("Waiting input :");
+        return input;
+    }
+
+    /**
+     * Maps the data from the board model to the board view
+     */
+    private void mapModelDataToViewData()
+    {
+        playerView.updateView(playerModel.getPlayerId(), playerModel.getTileStackViewData());
     }
 }

@@ -1,15 +1,20 @@
 package Player.View;
 
+import java.util.List;
+
 /**
  * The Player view - handles exposing the player data
  */
 public class PlayerView {
+    private String id;
+    public char[] availableTiles;
     /**
      * Updates the view
      */
-    public void updateView()
+    public void updateView(String id, char[] availableTiles)
     {
-        // TODO
+        this.id = id;
+        this.availableTiles = availableTiles;
     }
 
     /**
@@ -17,6 +22,11 @@ public class PlayerView {
      */
     public void printPlayer()
     {
-        // TODO
+        System.out.print("Player " + id + " - Available tiles: [");
+        for(char c : availableTiles)
+        {
+            System.out.print("[" + c + "]");
+        }
+        System.out.print("]");
     }
 }
