@@ -10,8 +10,20 @@ import java.util.HashMap;
  */
 public class PlayerController {
 
+    /**
+     * The players models
+     */
     HashMap<String, PlayerModel> players;
+
+    /**
+     * Current Player view
+     */
     PlayerView playerView;
+
+    /**
+     * The id of the player currently playing it's turn
+     */
+    private String currentTurnPlayerId;
 
     /**
      * Handles input from a specific player
