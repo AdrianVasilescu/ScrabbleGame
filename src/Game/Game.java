@@ -1,44 +1,45 @@
 package Game;
 
 import Board.Controller.BoardController;
+import Common.FileInputReader;
+import Common.Tile;
+import Exceptions.InvalidInputException;
+import Exceptions.InvalidMoveException;
+import Exceptions.NotEnoughPlayersException;
 import Player.Controller.PlayerController;
-import Player.Model.PlayerModel;
+import TilePool.Controller.TilePoolController;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * The Game
  */
 public class Game implements Runnable{
-    /**
-     * The board controller - handles board interactions
-     */
-    private BoardController boardController;
-
-    /**
-     * The player controller - handles player I/O
-     */
-    private PlayerController playerController;
 
     /**
      * Instantiates a new game
-     * @param boardController the board controller
-     * @param playerController the player controller
      */
-    public Game(BoardController boardController, PlayerController playerController)
+    public Game()
     {
-        this.boardController = boardController;
-        this.playerController = playerController;
     }
 
     @Override
     public void run()
     {
-        PlayerController player1Controller = new PlayerController("1");
-        PlayerController player2Controller = new PlayerController("2");
+        try {
+            BoardController boardController = new BoardController();
+            PlayerController player1Controller = new PlayerController(boardController.addPlayer());
+            PlayerController player2Controller = new PlayerController(boardController.addPlayer());
+            boardController.startGame();
+            TilePoolController tilePoolController = new TilePoolController();
 
-        player1Controller.receiveTiles(boardController.getTilesFromStack(7));
-        player2Controller.receiveTiles(boardController.getTilesFromStack(7));
+            player1Controller.receiveTiles(tilePoolController.getTilesFromPool(7));
+            player2Controller.receiveTiles(tilePoolController.getTilesFromPool(7));
 
-        player1Controller.getInputFromPlayer();
-        player2Controller.getInputFromPlayer();
+            boardController.handleTilesFromPlayer(FileInputReader.getInput(1));
+        } catch (NotEnoughPlayersException | InvalidInputException | InvalidMoveException e) {
+            e.printStackTrace();
+        }
     }
 }

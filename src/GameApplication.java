@@ -4,12 +4,7 @@ import Player.Controller.PlayerController;
 
 public class GameApplication {
     public static void main(String[] args) {
-        BoardController boardController = new BoardController();
-        PlayerController playerController = new PlayerController("1");
-        Game game = new Game(boardController, playerController);
-
+        Game game = new Game();
         game.run();
-
-        System.out.println("Hello World!");
     }
 }

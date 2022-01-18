@@ -11,17 +11,11 @@ public class BoardView {
     char[][] board;
 
     /**
-     * The available tiles
-     */
-    char[] tiles;
-
-    /**
      * Updates the view
      */
-    public void updateView(char[][] newBoard, char[] tilesViewData)
+    public void updateView(char[][] newBoard)
     {
         this.board = newBoard;
-        this.tiles = tilesViewData;
     }
 
     /**
@@ -38,18 +32,5 @@ public class BoardView {
             }
             System.out.print("|\n");
         }
-        System.out.println("\nTILES STACK:\n");
-        int spacingCount = 0;
-        System.out.print("[");
-        for(char c : tiles)
-        {
-            if(spacingCount == 20) {
-                System.out.print("\n");
-                spacingCount = 0;
-            }
-            System.out.print("[" + c + "]");
-            spacingCount++;
-        }
-        System.out.println("]");
     }
 }

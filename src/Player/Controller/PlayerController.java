@@ -7,8 +7,6 @@ import Player.View.PlayerView;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Thread.sleep;
-
 /**
  * The Player controller - handles player inputs
  */
@@ -48,7 +46,17 @@ public class PlayerController {
         ArrayList<Tile> input = new ArrayList<>();
 
         System.out.println("Waiting input :");
+        // TODO
+
         return input;
+    }
+
+    /**
+     * Starts playing
+     */
+    public void startGame()
+    {
+        // TODO
     }
 
     /**

@@ -91,4 +91,10 @@ public class Tile {
     public int getScore() {
         return score;
     }
+
+    @Override
+    public String toString()
+    {
+        return "[" + row + "]" + "[" + column + "] =" + letter + "";
+    }
 }

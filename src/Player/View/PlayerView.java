@@ -27,6 +27,6 @@ public class PlayerView {
         {
             System.out.print("[" + c + "]");
         }
-        System.out.print("]");
+        System.out.println("]");
     }
 }
