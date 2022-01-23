@@ -1,6 +1,4 @@
-import Board.Controller.BoardController;
-import Game.Game;
-import Player.Controller.PlayerController;
+import main.Game.Game;
 
 public class GameApplication {
     public static void main(String[] args) {
