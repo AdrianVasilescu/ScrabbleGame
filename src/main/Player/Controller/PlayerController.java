@@ -1,5 +1,6 @@
 package main.Player.Controller;
 
+import main.Common.PlayerInputService;
 import main.Common.Tile;
 import main.Player.Model.PlayerModel;
 import main.Player.View.PlayerView;
@@ -15,20 +16,23 @@ public class PlayerController {
     /**
      * The player model
      */
-    PlayerModel playerModel;
+    private PlayerModel playerModel;
 
     /**
      * Current java.Player view
      */
-    PlayerView playerView;
+    private PlayerView playerView;
+
+    private PlayerInputService playerInputService;
 
     /**
      * Instantiates a new java.Player Controller
      */
-    public PlayerController(String id)
+    public PlayerController()
     {
         this.playerView = new PlayerView();
-        this.playerModel = new PlayerModel(id);
+        this.playerModel = new PlayerModel();
+        this.playerInputService = new PlayerInputService();
     }
 
     public void receiveTiles(List<Tile> newTiles)
@@ -38,25 +42,12 @@ public class PlayerController {
     }
 
     /**
-     * Handles input from player
+     * Returns the player input asked in prompt
+     * @param prompt
+     * @return
      */
-    public List<Tile> getInputFromPlayer()
-    {
-        playerView.printPlayer();
-        ArrayList<Tile> input = new ArrayList<>();
-
-        System.out.println("Waiting input :");
-        // TODO
-
-        return input;
-    }
-
-    /**
-     * Starts playing
-     */
-    public void startGame()
-    {
-        // TODO
+    public String getInput(String prompt) {
+        return playerInputService.getInput(prompt);
     }
 
     /**

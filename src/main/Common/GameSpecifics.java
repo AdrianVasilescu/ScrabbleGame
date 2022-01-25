@@ -40,5 +40,12 @@ public final class GameSpecifics {
             {'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L'},
             {'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W'}};
 
+    //private static final ScrabbleWordChecker CHECKER;
     private GameSpecifics(){}
+
+    public static boolean checkWord(String word)
+    {
+        // TODO
+        return true;
+    }
 }

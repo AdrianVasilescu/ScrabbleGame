@@ -21,11 +21,9 @@ public class PlayerModel {
 
     /**
      * Instantiates a new player
-     * @param playerId
      */
-    public PlayerModel(String playerId)
+    public PlayerModel()
     {
-        this.playerId = playerId;
         this.tileStack = new ArrayList<>();
     }
 

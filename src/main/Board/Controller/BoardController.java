@@ -6,7 +6,6 @@ import main.Common.Tile;
 import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
-import main.Exceptions.NotEnoughPlayersException;
 
 import java.util.List;
 
@@ -35,22 +34,11 @@ public class BoardController {
     }
 
     /**
-     * Starts the game
-     * @throws NotEnoughPlayersException in case we don't have at least 2 players
+     * Prints the board
      */
-    public void startGame() throws NotEnoughPlayersException {
-        boardModel.startGame();
-        mapModelDataToViewData();
-        boardView.printBoard();
-    }
+    public void printBoard(){
 
-    /**
-     * Notify the board to consider a new player
-     * @return the generated player id
-     */
-    public String addPlayer()
-    {
-        return boardModel.newPlayerJoinedTheGame();
+        boardView.printBoard();
     }
 
     /**

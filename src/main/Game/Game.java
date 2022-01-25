@@ -1,43 +1,48 @@
 package main.Game;
 
+
+import lib.Protocol;
 import main.Board.Controller.BoardController;
-import main.Common.FileInputReader;
-import main.Exceptions.InitialWordNotOnCenterException;
-import main.Exceptions.InvalidInputException;
-import main.Exceptions.InvalidMoveException;
-import main.Exceptions.NotEnoughPlayersException;
-import main.TilePool.Controller.TilePoolController;
+import main.Common.PlayerInputService;
 import main.Player.Controller.PlayerController;
+import main.TilePool.Controller.TilePoolController;
 
 /**
- * The java.Game
+ * The Game
  */
 public class Game implements Runnable{
+    private TilePoolController tilePoolController;
+    private PlayerController playerController;
+    private BoardController boardController;
+    private GameConnector gameConnector;
 
     /**
      * Instantiates a new game
      */
     public Game()
     {
+        this.tilePoolController = new TilePoolController();
+        this.playerController = new PlayerController();
+        this.boardController = new BoardController();
+        this.gameConnector = new GameConnector();
     }
 
     @Override
-    public void run()
-    {
-        try {
-            BoardController boardController = new BoardController();
-            PlayerController player1Controller = new PlayerController(boardController.addPlayer());
-            PlayerController player2Controller = new PlayerController(boardController.addPlayer());
-            boardController.startGame();
-            TilePoolController tilePoolController = new TilePoolController();
+    public void run() {
+        // GET USER NAME
+        String name = playerController.getInput("Please enter your name:");
+        gameConnector.sendMessage(buildAnnounce(name));
 
-            player1Controller.receiveTiles(tilePoolController.getTilesFromPool(7));
-            player2Controller.receiveTiles(tilePoolController.getTilesFromPool(7));
+        //wait for WELCOME
 
-            boardController.handleTilesFromPlayer(FileInputReader.getInput(1));
+        while(true) // TODO
+        {
 
-        } catch (NotEnoughPlayersException | InvalidInputException | InvalidMoveException | InitialWordNotOnCenterException e) {
-            e.printStackTrace();
         }
+    }
+
+    private String buildAnnounce(String name)
+    {
+        return Protocol.BasicCommand.ANNOUNCE.toString() + Protocol.UNIT_SEPARATOR + name + Protocol.MESSAGE_SEPARATOR;
     }
 }

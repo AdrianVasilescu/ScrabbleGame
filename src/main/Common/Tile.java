@@ -34,6 +34,18 @@ public class Tile {
     }
 
     /**
+     * Instantiates a placed tile
+     * @param letter the letter on the tile
+     * @param score the score the tile offers
+     */
+    public Tile(int row, int column, char letter, int score) {
+        this.row = row;
+        this.column = column;
+        this.letter = letter;
+        this.score = score;
+    }
+
+    /**
      * Gets the row
      * @return the row
      */

@@ -2,6 +2,7 @@ package main.Board.Model;
 
 import main.Common.GameSpecifics;
 import main.Common.Tile;
+import main.Exceptions.InvalidMoveException;
 
 import java.util.*;
 
@@ -45,13 +46,13 @@ public class BoardState {
 
     /**
      * Places a tile
-     * @param row
-     * @param column
      * @param tile
+     * @throws InvalidMoveException if the position is already occupied
      */
-    public void placeTile(int row, int column, Tile tile)
-    {
-        board[row][column] = tile;
+    public void placeTile(Tile tile) throws InvalidMoveException {
+        if(isPositionOccupied(tile.getRow(), tile.getColumn()))
+            throw new InvalidMoveException();
+        board[tile.getRow()][tile.getColumn()] = tile;
     }
 
     /**
@@ -161,7 +162,7 @@ public class BoardState {
      * Find the row of the first letter of a vertical word
      * @param row
      * @param column
-     * @return the
+     * @return the row
      */
     private int findUpperRoot(int row, int column)
     {
@@ -172,6 +173,13 @@ public class BoardState {
         return row;
     }
 
+    /**
+     * Checks for a word horizontally
+     * @param rootRow
+     * @param rootColumn
+     * @param visited
+     * @return the score for this word
+     */
     private int checkWordHorizontally(int rootRow, int rootColumn, boolean[][] visited) {
         String word = "";
         int score = 0;
@@ -217,9 +225,16 @@ public class BoardState {
         return score;
     }
 
+    /**
+     * Validates the horizontal word
+     * @param row
+     * @param column
+     * @param word
+     * @return whether the word is valid or not
+     */
     private boolean validateHorizontalWord(int row, int column, String word)
     {
-        //TODO use the word validator
+        GameSpecifics.checkWord(word);
         int position = row * 15 + column;
         if(!horizontalWords.containsKey(position) || !horizontalWords.get(position).equals(word))
         {
@@ -229,6 +244,13 @@ public class BoardState {
         return false;
     }
 
+    /**
+     * Checks for a word vertically
+     * @param rootRow
+     * @param rootColumn
+     * @param visited
+     * @return the score for this word
+     */
     private int checkWordVertically(int rootRow, int rootColumn, boolean[][] visited) {
         String word = "";
         int score = 0;
@@ -274,9 +296,16 @@ public class BoardState {
         return score;
     }
 
+    /**
+     * Validates the horizontal word and gets it's score
+     * @param row
+     * @param column
+     * @param word
+     * @return the word's score
+     */
     private boolean validateVerticalWord(int row, int column, String word)
     {
-        //TODO use the word validator
+        GameSpecifics.checkWord(word);
         int position = row * 15 + column;
         if(!verticalWords.containsKey(position) || !verticalWords.get(position).equals(word))
         {
