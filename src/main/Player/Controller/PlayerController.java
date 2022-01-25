@@ -1,11 +1,10 @@
 package main.Player.Controller;
 
-import main.Common.PlayerInputService;
+import main.Common.PlayerInteractor;
 import main.Common.Tile;
 import main.Player.Model.PlayerModel;
 import main.Player.View.PlayerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,16 +22,17 @@ public class PlayerController {
      */
     private PlayerView playerView;
 
-    private PlayerInputService playerInputService;
+    private PlayerInteractor playerInteractor;
 
     /**
-     * Instantiates a new java.Player Controller
+     * Instantiates a new Player Controller
+     * @param playerInteractor
      */
-    public PlayerController()
+    public PlayerController(PlayerInteractor playerInteractor)
     {
         this.playerView = new PlayerView();
         this.playerModel = new PlayerModel();
-        this.playerInputService = new PlayerInputService();
+        this.playerInteractor = playerInteractor;
     }
 
     public void receiveTiles(List<Tile> newTiles)
@@ -42,12 +42,11 @@ public class PlayerController {
     }
 
     /**
-     * Returns the player input asked in prompt
-     * @param prompt
+     * Returns the player input
      * @return
      */
-    public String getInput(String prompt) {
-        return playerInputService.getInput(prompt);
+    public String getInput() {
+        return playerInteractor.getInput();
     }
 
     /**

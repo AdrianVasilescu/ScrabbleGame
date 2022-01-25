@@ -92,7 +92,7 @@ public class Tile {
      */
     public void setLetter(char letter)
     {
-        if(this.letter == '*')
+        if(this.letter == '!')
         {
             this.letter = letter;
         }

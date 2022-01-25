@@ -36,9 +36,8 @@ public class BoardController {
     /**
      * Prints the board
      */
-    public void printBoard(){
-
-        boardView.printBoard();
+    public String printBoard(){
+        return boardView.printBoard();
     }
 
     /**
@@ -74,7 +73,7 @@ public class BoardController {
     /**
      * Maps the data from the board model to the board view
      */
-    private void mapModelDataToViewData()
+    public void mapModelDataToViewData()
     {
         char[][] boardViewData = boardModel.getBoardViewData();
 

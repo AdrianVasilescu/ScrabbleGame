@@ -1,9 +1,12 @@
 package main.Game;
 
+import lib.Protocol;
+
 import java.net.Socket;
 
 public class GameConnector {
     Socket socket;
+    String message;
 
     public void sendMessage(String message)
     {
@@ -12,6 +15,6 @@ public class GameConnector {
 
     public String getNextMessage()
     {
-        return "";
+        return Protocol.BasicCommand.WELCOME.name() + Protocol.UNIT_SEPARATOR + "Marcel" + Protocol.MESSAGE_SEPARATOR;
     }
 }

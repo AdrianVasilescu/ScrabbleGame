@@ -92,7 +92,7 @@ public class BoardState {
             {
                 if(board[i][j] == null)
                 {
-                    viewData[i][j] = '-';
+                    viewData[i][j] = '_';
                 }
                 else
                 {
