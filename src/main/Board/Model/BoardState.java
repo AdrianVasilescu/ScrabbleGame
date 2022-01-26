@@ -128,7 +128,7 @@ public class BoardState {
         return clone;
     }
 
-    public int getScoreForPlay() {
+    public int getScoreForPlay() throws InvalidMoveException {
         boolean[][] visited = new boolean[15][15];
 
         if(isPositionOccupied(7, 6)
@@ -182,8 +182,9 @@ public class BoardState {
      * @param rootColumn
      * @param visited
      * @return the score for this word
+     * @throws InvalidMoveException in case the word is not valid
      */
-    private int checkWordHorizontally(int rootRow, int rootColumn, boolean[][] visited) {
+    private int checkWordHorizontally(int rootRow, int rootColumn, boolean[][] visited) throws InvalidMoveException {
         String word = "";
         int score = 0;
         int wordMultiplier = 1;
@@ -215,7 +216,6 @@ public class BoardState {
         System.out.println("Found word:" + word + " Score: " + score);
         if(!validateHorizontalWord(rootRow, rootColumn, word))
         {
-            System.out.println("Word " + word + "already exists");
             score = 0;
         }
 
@@ -234,17 +234,21 @@ public class BoardState {
      * @param column
      * @param word
      * @return whether the word is valid or not
+     * @throws InvalidMoveException in case the word is not valid
      */
     private boolean validateHorizontalWord(int row, int column, String word)
-    {
-        GameSpecifics.checkWord(word);
+            throws InvalidMoveException {
         int position = row * 15 + column;
-        if(!horizontalWords.containsKey(position) || !horizontalWords.get(position).equals(word))
+        if(horizontalWords.containsKey(position) && horizontalWords.get(position).equals(word))
         {
-            horizontalWords.put(position, word);
-            return true;
+            return false;
         }
-        return false;
+        horizontalWords.put(position, word);
+        if(!GameSpecifics.checkWord(word))
+        {
+            throw new InvalidMoveException(Protocol.Error.E006);
+        }
+        return true;
     }
 
     /**
@@ -253,8 +257,9 @@ public class BoardState {
      * @param rootColumn
      * @param visited
      * @return the score for this word
+     * @throws InvalidMoveException in case the word is not valid
      */
-    private int checkWordVertically(int rootRow, int rootColumn, boolean[][] visited) {
+    private int checkWordVertically(int rootRow, int rootColumn, boolean[][] visited) throws InvalidMoveException {
         String word = "";
         int score = 0;
         int wordMultiplier = 1;
@@ -286,7 +291,6 @@ public class BoardState {
         System.out.println("Found word:" + word + " Score: " + score);
         if(!validateVerticalWord(rootRow, rootColumn, word))
         {
-            System.out.println("Word " + word + "already exists");
             score = 0;
         }
 
@@ -305,15 +309,19 @@ public class BoardState {
      * @param column
      * @param word
      * @return the word's score
+     * @throws InvalidMoveException in case the word is not valid
      */
-    private boolean validateVerticalWord(int row, int column, String word)
-    {
+    private boolean validateVerticalWord(int row, int column, String word) throws InvalidMoveException {
         GameSpecifics.checkWord(word);
         int position = row * 15 + column;
-        if(!verticalWords.containsKey(position) || !verticalWords.get(position).equals(word))
+        if(verticalWords.containsKey(position) && verticalWords.get(position).equals(word))
         {
-            verticalWords.put(position, word);
-            return true;
+            return false;
+        }
+        verticalWords.put(position, word);
+        if(!GameSpecifics.checkWord(word))
+        {
+            throw new InvalidMoveException(Protocol.Error.E006);
         }
         return false;
     }

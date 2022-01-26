@@ -1,12 +1,8 @@
 package main.TilePool.Model;
 
-import main.Common.Tile;
 import main.Exceptions.NotEnoughTilesException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * The tile pool model
@@ -15,7 +11,7 @@ public class TilePoolModel {
     /**
      * The available tiles
      */
-    List<Tile> tileStack;
+    List<Character> tileStack;
 
     public TilePoolModel()
     {
@@ -28,14 +24,14 @@ public class TilePoolModel {
      * @param numTiles
      * @return
      */
-    public List<Tile> getTilesFromPool(int numTiles)
+    public String getTilesFromPool(int numTiles)
     {
-        List<Tile> tiles = new ArrayList<>();
+        String tiles = "";
         Random rand = new Random();
 
         while (numTiles > 0 && !tileStack.isEmpty())
         {
-            tiles.add(tileStack.remove(rand.nextInt(tileStack.size() - 1)));
+            tiles += tileStack.remove(rand.nextInt(tileStack.size() - 1));
             numTiles--;
         }
 
@@ -48,13 +44,16 @@ public class TilePoolModel {
      * @return the swapped tiles
      * @throws NotEnoughTilesException if there are not enough tiles in the stack
      */
-    public List<Tile> swapTiles(List<Tile> tiles) throws NotEnoughTilesException {
-        if(tileStack.size() < tiles.size())
+    public String swapTiles(char[] tiles) throws NotEnoughTilesException {
+        if(tileStack.size() < tiles.length)
         {
             throw new NotEnoughTilesException();
         }
-        List<Tile> ret = this.getTilesFromPool(tiles.size());
-        this.tileStack.addAll(tiles);
+        String ret = this.getTilesFromPool(tiles.length);
+        for(char c : tiles)
+        {
+            tileStack.add(c);
+        }
 
         return ret;
     }
@@ -67,7 +66,7 @@ public class TilePoolModel {
         char[] tiles = new char[tileStack.size()];
         for(int i = 0; i < tileStack.size(); i++)
         {
-            tiles[i] = tileStack.get(i).getLetter();
+            tiles[i] = tileStack.get(i);
         }
 
         return tiles;
@@ -78,32 +77,32 @@ public class TilePoolModel {
      */
     private void initializeTileStack() {
         tileStack = new ArrayList<>();
-        tileStack.addAll(Collections.nCopies(9, new Tile('A')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('B')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('C')));
-        tileStack.addAll(Collections.nCopies(4, new Tile('D')));
-        tileStack.addAll(Collections.nCopies(12, new Tile('E')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('F')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('G')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('H')));
-        tileStack.addAll(Collections.nCopies(8, new Tile('I')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('J')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('K')));
-        tileStack.addAll(Collections.nCopies(4, new Tile('L')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('M')));
-        tileStack.addAll(Collections.nCopies(6, new Tile('N')));
-        tileStack.addAll(Collections.nCopies(8, new Tile('O')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('P')));
-        tileStack.addAll(Collections.nCopies(1, new Tile('Q')));
-        tileStack.addAll(Collections.nCopies(6, new Tile('R')));
-        tileStack.addAll(Collections.nCopies(4, new Tile('S')));
-        tileStack.addAll(Collections.nCopies(6, new Tile('T')));
-        tileStack.addAll(Collections.nCopies(4, new Tile('U')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('V')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('W')));
-        tileStack.addAll(Collections.nCopies(1, new Tile('X')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('Y')));
-        tileStack.addAll(Collections.nCopies(1, new Tile('Z')));
-        tileStack.addAll(Collections.nCopies(2, new Tile('!')));
+        tileStack.addAll(Collections.nCopies(9, 'A'));
+        tileStack.addAll(Collections.nCopies(2, 'B'));
+        tileStack.addAll(Collections.nCopies(2, 'C'));
+        tileStack.addAll(Collections.nCopies(4, 'D'));
+        tileStack.addAll(Collections.nCopies(12,'E'));
+        tileStack.addAll(Collections.nCopies(2,'F'));
+        tileStack.addAll(Collections.nCopies(2, 'G'));
+        tileStack.addAll(Collections.nCopies(2, 'H'));
+        tileStack.addAll(Collections.nCopies(8, 'I'));
+        tileStack.addAll(Collections.nCopies(2, 'J'));
+        tileStack.addAll(Collections.nCopies(2, 'K'));
+        tileStack.addAll(Collections.nCopies(4, 'L'));
+        tileStack.addAll(Collections.nCopies(2, 'M'));
+        tileStack.addAll(Collections.nCopies(6, 'N'));
+        tileStack.addAll(Collections.nCopies(8, 'O'));
+        tileStack.addAll(Collections.nCopies(2, 'P'));
+        tileStack.addAll(Collections.nCopies(1, 'Q'));
+        tileStack.addAll(Collections.nCopies(6, 'R'));
+        tileStack.addAll(Collections.nCopies(4, 'S'));
+        tileStack.addAll(Collections.nCopies(6, 'T'));
+        tileStack.addAll(Collections.nCopies(4, 'U'));
+        tileStack.addAll(Collections.nCopies(2, 'V'));
+        tileStack.addAll(Collections.nCopies(2, 'W'));
+        tileStack.addAll(Collections.nCopies(1, 'X'));
+        tileStack.addAll(Collections.nCopies(2, 'Y'));
+        tileStack.addAll(Collections.nCopies(1, 'Z'));
+        tileStack.addAll(Collections.nCopies(2, '!'));
     }
 }

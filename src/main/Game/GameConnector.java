@@ -15,6 +15,6 @@ public class GameConnector {
 
     public String getNextMessage()
     {
-        return Protocol.BasicCommand.WELCOME.name() + Protocol.UNIT_SEPARATOR + "Marcel" + Protocol.MESSAGE_SEPARATOR;
+        return Protocol.BasicCommand.WELCOME.name() + Protocol.UNIT_SEPARATOR + "TEST" + Protocol.MESSAGE_SEPARATOR;
     }
 }

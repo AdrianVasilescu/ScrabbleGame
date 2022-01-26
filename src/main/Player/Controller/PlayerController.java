@@ -41,6 +41,10 @@ public class PlayerController {
         mapModelDataToViewData();
     }
 
+    public void removeTiles(List<Tile> concernedTiles) {
+        playerModel.removeTiles(concernedTiles);
+    }
+
     /**
      * Returns the player input
      * @return

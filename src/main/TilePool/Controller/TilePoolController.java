@@ -36,7 +36,7 @@ public class TilePoolController {
      * @param numTiles
      * @return retrieved numTiles tiles
      */
-    public List<Tile> getTilesFromPool(int numTiles)
+    public String getTilesFromPool(int numTiles)
     {
         return tilePoolModel.getTilesFromPool(numTiles);
     }
@@ -47,7 +47,7 @@ public class TilePoolController {
      * @return swapped tiles
      * @throws NotEnoughTilesException if there are not enough tiles in the pool for the swap
      */
-    public List<Tile> swapTiles(List<Tile> tiles) throws NotEnoughTilesException {
+    public String swapTiles(char[] tiles) throws NotEnoughTilesException {
         return tilePoolModel.swapTiles(tiles);
     }
 

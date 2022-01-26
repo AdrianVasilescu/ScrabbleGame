@@ -17,7 +17,7 @@ public class PlayerModel {
     /**
      * The list of available tiles
      */
-    private List<Tile> tileStack;
+    private List<Character> tileStack;
 
     /**
      * Instantiates a new player
@@ -49,8 +49,12 @@ public class PlayerModel {
      * Adds new tiles to stack
      * @param newTiles
      */
-    public void addTiles(List<Tile> newTiles) {
-        this.tileStack.addAll(newTiles);
+    public void addTiles(List<Tile> newTiles)
+    {
+        for(Tile t : newTiles)
+        {
+            this.tileStack.add(t.getLetter());
+        }
     }
 
     /**
@@ -63,9 +67,16 @@ public class PlayerModel {
 
         for(int i = 0; i < tileStack.size(); i++)
         {
-            viewData[i] = tileStack.get(i).getLetter();
+            viewData[i] = tileStack.get(i);
         }
 
         return viewData;
+    }
+
+    public void removeTiles(List<Tile> concernedTiles) {
+        for(Tile t : concernedTiles)
+        {
+            this.tileStack.remove(t.getLetter());
+        }
     }
 }

@@ -2,6 +2,7 @@ package main.Common;
 
 import lib.Protocol;
 import main.Exceptions.InvalidInputException;
+import main.Exceptions.InvalidMoveException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,5 +175,58 @@ public final class GameSpecifics {
         }
 
         return ret;
+    }
+
+    public static List<Tile> extractInlineTiles(String s)
+    {
+        List<Tile> ret = new ArrayList<>();
+
+        for (char c : s.toCharArray()) {
+            ret.add(new Tile(c));
+        }
+
+        return ret;
+    }
+
+    private static String buildAnnounce(String name)
+    {
+        return Protocol.BasicCommand.ANNOUNCE.toString() + Protocol.UNIT_SEPARATOR + name + Protocol.MESSAGE_SEPARATOR;
+    }
+
+    public static int decodeRequestGame(String[] parts) throws InvalidInputException, InvalidMoveException {
+        int numP = -1;
+        if(Protocol.BasicCommand.REQUESTGAME.name().equals(parts[0]))
+        {
+            if(parts.length > 2)
+            {
+                try {
+                    numP = Integer.parseInt(parts[1]);
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new InvalidInputException(Protocol.Error.E003);
+                }
+            }
+            else
+            {
+                throw new InvalidMoveException(Protocol.Error.E002);
+            }
+        }
+        else
+        {
+            throw new InvalidMoveException(Protocol.Error.E002);
+        }
+        return numP;
+    }
+
+    public static String encodeMessage(String name, String... parameters)
+    {
+        String cmd = name;
+        for (String param : parameters) {
+            cmd += +Protocol.UNIT_SEPARATOR + param;
+        }
+        cmd += Protocol.MESSAGE_SEPARATOR;
+
+        return cmd;
     }
 }

@@ -34,6 +34,14 @@ public class BoardView {
     }
 
     /**
+     * Get the board view data
+     */
+    public char[][] getCurrentView()
+    {
+        return board;
+    }
+
+    /**
      * Prints the board
      */
     public String printBoard()

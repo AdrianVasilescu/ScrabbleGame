@@ -2,17 +2,15 @@ package main.Board.Controller;
 
 import lib.Protocol;
 import main.Board.View.BoardView;
-import main.Board.Model.BoardModel;
+import main.Board.Model.BoardServerModel;
 import main.Common.Tile;
 import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static main.Common.GameSpecifics.extractTiles;
-import static main.Common.GameSpecifics.getRow;
 
 /**
  * The java.Board Controller - handles interactions
@@ -21,7 +19,7 @@ public class BoardController {
     /**
      * The board model
      */
-    private BoardModel boardModel;
+    private BoardServerModel boardServerModel;
 
     /**
      * The board view
@@ -33,9 +31,9 @@ public class BoardController {
      */
     public BoardController()
     {
-        this.boardModel = new BoardModel();
+        this.boardServerModel = new BoardServerModel();
         this.boardView = new BoardView();
-
+        this.mapModelDataToViewData();
     }
 
     /**
@@ -50,17 +48,20 @@ public class BoardController {
      * @param start the start tile
      * @param align vertical or horizontal
      * @param word the word
+     * @return the score
      * @throws InvalidInputException if the input is not valid
      * @throws InvalidMoveException if the move cannot be done on the current state of the board
      * @throws InitialWordNotOnCenterException if the first word placed on board does not cover the center tile
      */
-    public void handleMove(String start, String align, String word)
+    public int handleMove(String start, String align, String word)
             throws InvalidMoveException, InvalidInputException, InitialWordNotOnCenterException {
         List<Tile> tiles = extractTiles(start, align, word);
         validateInput(tiles);
-        boardModel.handleTiles(tiles);
+        int score = boardServerModel.handleTiles(tiles);
         mapModelDataToViewData();
         boardView.printBoard();
+
+        return score;
     }
 
     /**
@@ -84,7 +85,7 @@ public class BoardController {
      */
     public void mapModelDataToViewData()
     {
-        char[][] boardViewData = boardModel.getBoardViewData();
+        char[][] boardViewData = boardServerModel.getBoardViewData();
 
         boardView.updateView(boardViewData);
     }
