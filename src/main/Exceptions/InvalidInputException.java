@@ -1,8 +1,10 @@
 package main.Exceptions;
 
-public class InvalidInputException extends Throwable {
-    public InvalidInputException()
+import lib.Protocol;
+
+public class InvalidInputException extends GameException {
+    public InvalidInputException(Protocol.Error error)
     {
-        super("The provided input is invalid!");
+        super(error);
     }
 }

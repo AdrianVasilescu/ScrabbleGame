@@ -62,7 +62,9 @@ public class PlayerInteractor {
         c.weightx = 1/2;
         c.fill = GridBagConstraints.VERTICAL;
         serverMessages.setEditable(false);
-        JScrollPane serverPane = new JScrollPane(serverMessages);
+        serverMessages.setLineWrap(true);
+        JScrollPane serverPane = new JScrollPane(serverMessages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         gui.add(serverPane, c);
 
         c.gridx = 0;
@@ -117,5 +119,9 @@ public class PlayerInteractor {
         //Display the window.
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void printMessage(String s) {
+        serverMessages.append(">" + s + "\n");
     }
 }

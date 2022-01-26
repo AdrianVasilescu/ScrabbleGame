@@ -1,10 +1,13 @@
 package main.Board.Model;
 
+import lib.Protocol;
 import main.Common.GameSpecifics;
 import main.Common.Tile;
 import main.Exceptions.InvalidMoveException;
 
 import java.util.*;
+
+import static main.Common.GameSpecifics.getScoreOfCharacter;
 
 public class BoardState {
     /**
@@ -51,7 +54,7 @@ public class BoardState {
      */
     public void placeTile(Tile tile) throws InvalidMoveException {
         if(isPositionOccupied(tile.getRow(), tile.getColumn()))
-            throw new InvalidMoveException();
+            throw new InvalidMoveException(Protocol.Error.E005);
         board[tile.getRow()][tile.getColumn()] = tile;
     }
 
@@ -193,10 +196,10 @@ public class BoardState {
             word += board[row][column].getLetter();
             switch(GameSpecifics.MULTIPLIER_TYPES[row][column]) {
                 case 'L':
-                    score += board[row][column].getScore() * GameSpecifics.MULTIPLIERS[row][column];
+                    score += getScoreOfCharacter(board[row][column].getLetter()) * GameSpecifics.MULTIPLIERS[row][column];
                     break;
                 case 'W':
-                    score += board[row][column].getScore();
+                    score += getScoreOfCharacter(board[row][column].getLetter());
                     wordMultiplier *= GameSpecifics.MULTIPLIERS[row][column];
             }
             visited[row][column] = true;
@@ -264,10 +267,10 @@ public class BoardState {
             word += board[row][column].getLetter();
             switch(GameSpecifics.MULTIPLIER_TYPES[row][column]) {
                 case 'L':
-                    score += board[row][column].getScore() * GameSpecifics.MULTIPLIERS[row][column];
+                    score += getScoreOfCharacter(board[row][column].getLetter()) * GameSpecifics.MULTIPLIERS[row][column];
                     break;
                 case 'W':
-                    score += board[row][column].getScore();
+                    score += getScoreOfCharacter(board[row][column].getLetter());
                     wordMultiplier *= GameSpecifics.MULTIPLIERS[row][column];
             }
             visited[row][column] = true;

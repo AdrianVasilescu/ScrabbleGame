@@ -1,8 +1,10 @@
 package main.Exceptions;
 
-public class InvalidMoveException extends Throwable {
-    public InvalidMoveException()
+import lib.Protocol;
+
+public class InvalidMoveException extends GameException {
+    public InvalidMoveException(Protocol.Error error)
     {
-        super("The set of tiles can't be placed on the desired positions!");
+        super(error);
     }
 }

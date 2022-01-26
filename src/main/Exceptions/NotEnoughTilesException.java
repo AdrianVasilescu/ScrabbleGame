@@ -1,8 +1,10 @@
 package main.Exceptions;
 
-public class NotEnoughTilesException extends Throwable {
+import lib.Protocol;
+
+public class NotEnoughTilesException extends GameException {
     public NotEnoughTilesException()
     {
-        super("Not enough tiles for this action!");
+        super(Protocol.Error.E007);
     }
 }

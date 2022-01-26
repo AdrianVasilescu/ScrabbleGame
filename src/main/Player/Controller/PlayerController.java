@@ -56,4 +56,12 @@ public class PlayerController {
     {
         playerView.updateView(playerModel.getPlayerId(), playerModel.getTileStackViewData());
     }
+
+    public void printMessage(String s) {
+        playerInteractor.printMessage(s);
+    }
+
+    public void printMessageFromServer(String s) {
+        printMessage("SERVER:" + s);
+    }
 }

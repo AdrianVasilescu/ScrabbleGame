@@ -18,31 +18,25 @@ public class Tile {
      * The letter on the tile
      */
     private char letter;
-    /**
-     * The score the tile offers
-     */
-    private final int score;
 
     /**
      * Instantiates an unplaced tile
      * @param letter the letter on the tile
-     * @param score the score the tile offers
      */
-    public Tile(char letter, int score) {
+    public Tile(char letter) {
         this.letter = letter;
-        this.score = score;
     }
 
     /**
      * Instantiates a placed tile
      * @param letter the letter on the tile
-     * @param score the score the tile offers
+     * @param row
+     * @param column
      */
-    public Tile(int row, int column, char letter, int score) {
+    public Tile(int row, int column, char letter) {
         this.row = row;
         this.column = column;
         this.letter = letter;
-        this.score = score;
     }
 
     /**
@@ -98,25 +92,17 @@ public class Tile {
         }
     }
 
-    /**
-     * Gets the score that this tile offers
-     * @return the score
-     */
-    public int getScore() {
-        return score;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Tile)) return false;
         Tile tile = (Tile) o;
-        return row == tile.row && column == tile.column && letter == tile.letter && score == tile.score;
+        return row == tile.row && column == tile.column && letter == tile.letter;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(row, column, letter, score);
+        return Objects.hash(row, column, letter);
     }
 
     @Override

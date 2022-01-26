@@ -1,8 +1,10 @@
 package main.Exceptions;
 
-public class InitialWordNotOnCenterException extends Throwable {
+import lib.Protocol;
+
+public class InitialWordNotOnCenterException extends GameException {
     public InitialWordNotOnCenterException()
     {
-        super("The first word has to cover the center of the board!");
+        super(Protocol.Error.E005);
     }
 }

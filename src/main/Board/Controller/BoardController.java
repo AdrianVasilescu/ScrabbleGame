@@ -1,5 +1,6 @@
 package main.Board.Controller;
 
+import lib.Protocol;
 import main.Board.View.BoardView;
 import main.Board.Model.BoardModel;
 import main.Common.Tile;
@@ -7,7 +8,11 @@ import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static main.Common.GameSpecifics.extractTiles;
+import static main.Common.GameSpecifics.getRow;
 
 /**
  * The java.Board Controller - handles interactions
@@ -42,12 +47,16 @@ public class BoardController {
 
     /**
      * Handles input tiles from a player
-     * @param tiles
+     * @param start the start tile
+     * @param align vertical or horizontal
+     * @param word the word
      * @throws InvalidInputException if the input is not valid
      * @throws InvalidMoveException if the move cannot be done on the current state of the board
      * @throws InitialWordNotOnCenterException if the first word placed on board does not cover the center tile
      */
-    public void handleTilesFromPlayer(List<Tile> tiles) throws InvalidMoveException, InvalidInputException, InitialWordNotOnCenterException {
+    public void handleMove(String start, String align, String word)
+            throws InvalidMoveException, InvalidInputException, InitialWordNotOnCenterException {
+        List<Tile> tiles = extractTiles(start, align, word);
         validateInput(tiles);
         boardModel.handleTiles(tiles);
         mapModelDataToViewData();
@@ -65,7 +74,7 @@ public class BoardController {
             if(!Character.isAlphabetic(tile.getLetter()) ||
                     (tile.getRow() < 0 || tile.getRow() > 14) ||
                     (tile.getColumn() < 0 || tile.getColumn() > 14)) {
-                throw new InvalidInputException();
+                throw new InvalidInputException(Protocol.Error.E005);
             }
         }
     }

@@ -1,5 +1,6 @@
 package main.Board.Model;
 
+import lib.Protocol;
 import main.Common.Tile;
 import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidMoveException;
@@ -59,7 +60,7 @@ public class BoardModel {
         }
         else if(!neighboured && !occupiesCenter)
         {
-            throw new InvalidMoveException();
+            throw new InvalidMoveException(Protocol.Error.E005);
         }
 
         tempBoard.getScoreForPlay();
