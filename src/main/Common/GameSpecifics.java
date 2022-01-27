@@ -1,14 +1,16 @@
 package main.Common;
 
 import lib.Protocol;
+import main.Board.Model.BoardState;
 import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public final class GameSpecifics {
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
     /**
      * The predefined multipliers of the board
      */
@@ -197,7 +199,7 @@ public final class GameSpecifics {
         int numP = -1;
         if(Protocol.BasicCommand.REQUESTGAME.name().equals(parts[0]))
         {
-            if(parts.length > 2)
+            if(parts.length >= 2)
             {
                 try {
                     numP = Integer.parseInt(parts[1]);
@@ -206,6 +208,10 @@ public final class GameSpecifics {
                 {
                     throw new InvalidInputException(Protocol.Error.E003);
                 }
+            }
+            else if(parts.length == 1)
+            {
+                numP = 2;
             }
             else
             {
@@ -223,10 +229,51 @@ public final class GameSpecifics {
     {
         String cmd = name;
         for (String param : parameters) {
-            cmd += +Protocol.UNIT_SEPARATOR + param;
+            cmd += Protocol.UNIT_SEPARATOR + param;
         }
         cmd += Protocol.MESSAGE_SEPARATOR;
 
         return cmd;
+    }
+
+    public static boolean anyPossibleMoves(BoardState boardState, List<Character> availableTiles, int maxWordLen)
+    {
+        boolean possible = false;
+        if(maxWordLen > 1)
+        {
+            possible = anyPossibleMoves(boardState.cloneState(), availableTiles, maxWordLen - 1);
+        }
+
+        if(!possible)
+        {
+            int c = 0;
+            while(c < maxWordLen)
+            {
+
+            }
+        }
+        return false;
+    }
+
+    public static String extractTilesFromCommand(String command)
+    {
+        String[] parts = command.split(String.valueOf(Protocol.UNIT_SEPARATOR));
+        if("WORD".equals(parts[1]))
+        {
+            return parts[4];
+        }
+        else if("SWAP".equals(parts[1]))
+        {
+            return parts[2];
+        }
+
+        return "";
+    }
+
+    public static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        return NUMBER_PATTERN.matcher(strNum).matches();
     }
 }

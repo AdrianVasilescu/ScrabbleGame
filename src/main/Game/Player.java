@@ -8,26 +8,28 @@ import main.Exceptions.*;
 import main.Player.Controller.PlayerController;
 import main.TilePool.View.TilePoolView;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import static java.lang.Thread.sleep;
-import static main.Common.GameSpecifics.extractInlineTiles;
-import static main.Common.GameSpecifics.extractTiles;
+import static main.Common.GameSpecifics.*;
 
 public class Player implements Runnable{
     private static final char LOCAL_DELIMITER = '-';
     private TilePoolView tilePool;
     private PlayerController playerController;
     private BoardView board;
-    private GameConnector gameConnector;
+    private PlayerConnector gameConnector;
     private PlayerInteractor playerInteractor;
     private String name;
-    boolean connected = false;
+    private volatile boolean connected = false;
+    private volatile boolean gameOngoing = false;
+    private volatile boolean gameRequested = false;
     private final Semaphore stopGame;
     private final Semaphore playerSem;
-
     private Thread playerInputThread;
     private Thread serverConnecitonThread;
 
@@ -42,9 +44,18 @@ public class Player implements Runnable{
         this.playerController = new PlayerController(playerInteractor);
         populateInitialBoardView();
         playerInteractor.updateBoard(board.printBoard());
-        this.gameConnector = new GameConnector();
         this.stopGame = new Semaphore(0);
         this.playerSem = new Semaphore(0);
+    }
+
+    public void openConnection(String address, int port)
+    {
+        try {
+            Socket s = new Socket(address, port);
+            this.gameConnector = new PlayerConnector(s);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void populateInitialBoardView() {
@@ -56,7 +67,7 @@ public class Player implements Runnable{
 
     @Override
     public void run() {
-        connectToServer();
+        connectToGame();
         playerInputThread = new Thread(() -> listenToPlayer());
         serverConnecitonThread = new Thread(() -> listenToServer());
         serverConnecitonThread.start();
@@ -83,7 +94,7 @@ public class Player implements Runnable{
         serverConnecitonThread.interrupt();
     }
 
-    private void connectToServer() {
+    private void connectToGame() {
         while(!connected)
         {
             // GET USER NAME
@@ -91,13 +102,39 @@ public class Player implements Runnable{
             String name = playerController.getInput();
             gameConnector.sendMessage(buildAnnounce(name));
             // WAITING FOR HELLO
-            String message = gameConnector.getNextMessage();
+            String message = null;
+            try {
+                message = gameConnector.getNextMessage();
+                playerController.printMessageFromServer(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             try {
                 doAction(message);
             } catch (GameException e) {
                 e.printStackTrace();
-                // TODO
+                playerController.printMessage("Error: "
+                        + e.getError() + ": "
+                        + Protocol.Error.valueOf(e.getError().name()).getDescription());
+            }
+        }
+
+        while(!gameRequested)
+        {
+            playerController.printMessage("Going to request game.\n" +
+                    "How many players do you want?(2/3/4)");
+            String message = playerController.getInput();
+            if(!isNumeric(message)
+                    && (Integer.parseInt(message) < 2 || Integer.parseInt(message) > 4))
+            {
+                playerController.printMessage("Number of players must be between 2 and 4!");
+            }
+            else
+            {
+                gameConnector.sendMessage(Protocol.BasicCommand.REQUESTGAME.name() +
+                        Protocol.UNIT_SEPARATOR + message.trim() + Protocol.MESSAGE_SEPARATOR);
+                gameRequested = true;
             }
         }
     }
@@ -106,11 +143,15 @@ public class Player implements Runnable{
     {
         while(connected)
         {
-            try {
-                playerSem.acquire();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(gameOngoing) {
+                try {
+                    playerSem.acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+            else
+            playerController.printMessage("Enter your command!");
             String command = playerController.getInput();
             playerController.printMessage("Processing Command...");
             gameConnector.sendMessage(prepareLocalCommand(command));
@@ -127,12 +168,18 @@ public class Player implements Runnable{
     {
         while(connected)
         {
-            String message = gameConnector.getNextMessage();
-
             try {
+                String message = gameConnector.getNextMessage();
+                playerController.printMessageFromServer(message);
                 doAction(message);
             } catch (GameException e) {
-                handleError(e.getError().name());
+                playerController.printMessage("Error: "
+                        + e.getError() + ": "
+                        + Protocol.Error.valueOf(e.getError().name()).getDescription());
+            } catch (IOException e) {
+                connected = false;
+                // TODO disconnect from server
+                e.printStackTrace();
             }
             try {
                 sleep(300);
@@ -150,112 +197,133 @@ public class Player implements Runnable{
 
         String[] parts = message.split(String.valueOf(Protocol.UNIT_SEPARATOR));
         String msg = null;
-        switch (Protocol.BasicCommand.valueOf(parts[0]))
+
+        if (Protocol.BasicCommand.WELCOME.name().equals(parts[0]))
         {
-            case WELCOME:
-                //TODO validate command
-                playerController.printMessage("Connected to server!");
-                connected = true;
-                this.name = parts[1];
-            case REQUESTGAME:
-                throw new InvalidMoveException(Protocol.Error.E002);
-            case INFORMQUEUE:
-                //TODO validate command
-                // Nothing to do
-                msg = "There are currently " + parts[1] + " players in the queue. Game needs "
-                        + parts[2];
-                break;
-            case STARTGAME:
-                //TODO validate command
-                String players = "";
-                for(int i = 1; i < parts.length; i++)
-                {
-                    players += parts[i] + ",";
-                    i++;
-                }
-                msg = "Players:" + players;
-                playerSem.release();
-                break;
-            case NOTIFYTURN:
-                //TODO validate command
+            if (parts.length != 2) {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            playerController.printMessage("Connected to server!");
+            connected = true;
+            this.name = parts[1];
+        }
+        else if (Protocol.BasicCommand.INFORMQUEUE.name().equals(parts[0]))
+        {
+            if (parts.length != 3 && !isNumeric(parts[1]) && !isNumeric(parts[2]))
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            msg = "There are currently " + parts[1] + " players in the queue. Game needs "
+                    + parts[2];
+        }
+        else if (Protocol.BasicCommand.STARTGAME.name().equals(parts[0]))
+        {
+            if (parts.length < 3)
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            String players = "";
+            for (int i = 1; i < parts.length; i++)
+            {
+                players += parts[i] + ",";
+            }
+            msg = "Players:" + players;
+            gameOngoing = true;
+            playerSem.release();
+        } else if (Protocol.BasicCommand.NOTIFYTURN.name().equals(parts[0]))
+        {
+            if (parts.length != 3 && !isNumeric(parts[1]))
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            if (Integer.parseInt(parts[1]) == 1)
+            {
                 msg = "Your turn!";
                 playerSem.release();
-                break;
-            case MAKEMOVE:
-                throw new InvalidMoveException(Protocol.Error.E002);
-            case NEWTILES:
-                // TODO validate command
-                List<Tile> tiles = extractInlineTiles(parts[1]);
-                playerController.receiveTiles(tiles);
-                msg = "Got tiles " + parts[1];
-                break;
-            case INFORMMOVE:
-                // TODO validate command
-                // TODO keep summary of board on player side
-                List<Tile> concernedTiles;
-                if("WORD".equals(parts[2]))
-                {
-                    char [][] boardView = board.getCurrentView();
-                    concernedTiles = extractTiles(parts[3], parts[4], parts[5]);
-                    for(Tile t : concernedTiles)
-                    {
-                        boardView[t.getRow()][t.getColumn()] = t.getLetter();
-                    }
-                    board.updateView(boardView);
-                    playerInteractor.updateBoard(board.printBoard());
-                }
-                else if ("SWAP".equals(parts[2]))
-                {
-                    concernedTiles = extractInlineTiles(parts[3]);
-                }
-                else
-                {
-                    throw new InvalidMoveException(Protocol.Error.E002);
-                }
-
-                if(name.equals(parts[1]))
-                {
-                    playerController.removeTiles(concernedTiles);
-                }
-                break;
-            case ERROR:
-                // TODO validate error
-                handleError(parts[1]);
-                msg = "Error: " + parts[1];
-                break;
-            case GAMEOVER:
-                // TODO validate GAME OVER
-                msg = "Game finished with the status" + parts[1] + ".\nScores:\n";
-                for(int i = 2; i < parts.length; i += 2)
-                {
-                    msg += "Player " + parts[i] + ", score: " + parts[i+1] + "\n";
-                }
-                stopGame.release();
-                break;
-            case PLAYERDISCONNECTED:
-                msg = "A player has disconnected";
-                break;
+            }
+            else
+            {
+                msg = parts[2] + "'s Turn!";
+            }
         }
-        if(msg != null)
-            playerController.printMessageFromServer(msg);
-    }
-
-    private void handleError(String errorCode) {
-        Protocol.Error error = Protocol.Error.valueOf(errorCode);
-        switch (error)
+        else if (Protocol.BasicCommand.NEWTILES.name().equals(parts[0]))
         {
-            case E001:
-                connected = false;
-            case E002:
-            case E003:
-            case E004:
-            case E005:
-            case E006:
-            case E007:
-            case E008:
-            case E009:
-                playerController.printMessageFromServer(error.getDescription());
+            if (parts.length != 2)
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            List<Tile> tiles = extractInlineTiles(parts[1]);
+            playerController.receiveTiles(tiles);
+            msg = "Got tiles " + parts[1];
         }
+        else if (Protocol.BasicCommand.INFORMMOVE.name().equals(parts[0]))
+        {
+            if (parts.length < 3)
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            List<Tile> concernedTiles;
+            if ("WORD".equals(parts[2]))
+            {
+                if (parts.length != 6)
+                {
+                    throw new InvalidInputException(Protocol.Error.E003);
+                }
+                char[][] boardView = board.getCurrentView();
+                concernedTiles = extractTiles(parts[3], parts[4], parts[5]);
+                for (Tile t : concernedTiles)
+                {
+                    boardView[t.getRow()][t.getColumn()] = t.getLetter();
+                }
+                board.updateView(boardView);
+                playerInteractor.updateBoard(board.printBoard());
+            }
+            else if ("SWAP".equals(parts[2]))
+            {
+                if (parts.length != 4)
+                {
+                    throw new InvalidInputException(Protocol.Error.E003);
+                }
+                concernedTiles = extractInlineTiles(parts[3]);
+            }
+            else
+            {
+                throw new InvalidMoveException(Protocol.Error.E002);
+            }
+
+            if (name.equals(parts[1]))
+            {
+                playerController.removeTiles(concernedTiles);
+            }
+        }
+        else if (Protocol.BasicCommand.ERROR.name().equals(parts[0]))
+        {
+            if (parts.length != 2)
+            {
+                throw new InvalidInputException(Protocol.Error.E003);
+            }
+            msg = "Error: " + parts[1] + ": " + Protocol.Error.valueOf(parts[1]).getDescription();
+        }
+        else if (Protocol.BasicCommand.GAMEOVER.name().equals(parts[0]))
+        {
+            msg = "Game finished with the status" + parts[1] + ".\nScores:\n";
+            for (int i = 2; i < parts.length; i += 2)
+            {
+                msg += "Player " + parts[i] + ", score: " + parts[i + 1] + "\n";
+            }
+            stopGame.release();
+        }
+        else if (Protocol.BasicCommand.PLAYERDISCONNECTED.name().equals(parts[0]))
+        {
+            msg = parts[1] + " has disconnected";
+        }
+        else
+        {
+            throw new InvalidMoveException(Protocol.Error.E002);
+        }
+
+        if(msg != null)
+            playerController.printMessage(msg);
     }
 
     private String buildAnnounce(String name)

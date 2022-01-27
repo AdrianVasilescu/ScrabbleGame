@@ -44,6 +44,7 @@ public class BoardServerModel {
         boolean occupiesCenter = false;
         boolean neighboured = false;
         BoardState tempBoard = board.cloneState();
+        int ret;
 
         for(Tile tile : tiles)
         {
@@ -52,19 +53,32 @@ public class BoardServerModel {
             {
                 occupiesCenter |= tile.getRow() == 7 && tile.getColumn() == 7;
             }
-            tempBoard.placeTile(tile);
+            try {
+                tempBoard.placeTile(tile);
+            }
+            catch (InvalidMoveException e)
+            {
+                throw new InvalidMoveException(e.getError(), true);
+            }
         }
 
         if(!centerOccupied && !occupiesCenter)
         {
-            throw new InitialWordNotOnCenterException();
+            throw new InitialWordNotOnCenterException(true);
         }
         else if(!neighboured && !occupiesCenter)
         {
-            throw new InvalidMoveException(Protocol.Error.E005);
+            throw new InvalidMoveException(Protocol.Error.E005, true);
         }
 
-        int ret = tempBoard.getScoreForPlay();
+        try
+        {
+            ret = tempBoard.getScoreForPlay();
+        }
+        catch (InvalidMoveException e)
+        {
+            throw new InvalidMoveException(e.getError(), true);
+        }
         this.board = tempBoard;
 
         return ret;

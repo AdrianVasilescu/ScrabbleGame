@@ -1,5 +1,7 @@
 package main.Game;
 
+import java.io.IOException;
+
 public class PlayerSession {
     private PlayerConnector playerConnector;
     private String name;
@@ -20,7 +22,7 @@ public class PlayerSession {
         this.name = name;
     }
 
-    public String getNextMessage() {
+    public String getNextMessage() throws IOException {
         return playerConnector.getNextMessage();
     }
 
@@ -37,6 +39,7 @@ public class PlayerSession {
     }
 
     public void endSession() {
+        this.score = -1;
         this.playerThread.interrupt();
         try {
             this.playerThread.join();

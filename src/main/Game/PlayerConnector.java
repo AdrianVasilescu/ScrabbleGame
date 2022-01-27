@@ -26,26 +26,24 @@ public class PlayerConnector {
     public void sendMessage(String message)
     {
         try {
+            System.out.println("SENDING: " + message);
             dataOutputStream.writeChars(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String getNextMessage()
-    {
+    public String getNextMessage() throws IOException {
         String message = "";
-        try {
-            char c = dataInputStream.readChar();
-            while(c != Protocol.MESSAGE_SEPARATOR)
-            {
-                message += c;
-                c = dataInputStream.readChar();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        char c = dataInputStream.readChar();
+
+        while(c != Protocol.MESSAGE_SEPARATOR)
+        {
+            message += c;
+            c = dataInputStream.readChar();
         }
 
+        System.out.println("GOT: " + message);
         return message;
     }
 }

@@ -3,6 +3,8 @@ package main.Common;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.concurrent.Semaphore;
@@ -32,6 +34,7 @@ public class PlayerInteractor {
 
     public void updateTiles(String tiles)
     {
+
         this.availableTiles.setText("AVAILABLE TILES:\n" + tiles);
     }
 
@@ -41,7 +44,6 @@ public class PlayerInteractor {
         try {
             playerInput.setEditable(true);
             inputSem.acquire();
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -85,7 +87,6 @@ public class PlayerInteractor {
                     input = playerInput.getText();
                     playerInput.setText("");
                     playerInput.setEditable(false);
-                    serverMessages.append("ENTER\n");
                     inputSem.release();
                 }
             }
@@ -93,6 +94,25 @@ public class PlayerInteractor {
             @Override
             public void keyReleased(KeyEvent e) {
 
+            }
+        });
+        playerInput.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if("CMD-param-...-param".equals(playerInput.getText()))
+                {
+                    playerInput.setText("");
+                    playerInput.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if(playerInput.getText() == null || playerInput.getText().isEmpty())
+                {
+                    playerInput.setForeground(Color.GRAY);
+                    playerInput.setText("CMD-param-...-param");
+                }
             }
         });
         gui.add(playerInput, c);

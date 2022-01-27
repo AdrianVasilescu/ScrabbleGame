@@ -61,16 +61,16 @@ public class PlayerModel {
      * Gets the tile stack view data
      * @return the tile stack view data
      */
-    public char[] getTileStackViewData()
+    public String getTileStackViewData()
     {
-        char[] viewData = new char[tileStack.size()];
+        String viewData = "[  ";
 
         for(int i = 0; i < tileStack.size(); i++)
         {
-            viewData[i] = tileStack.get(i);
+            viewData += "[ " + tileStack.get(i) + " ]  ";
         }
 
-        return viewData;
+        return viewData + "]";
     }
 
     public void removeTiles(List<Tile> concernedTiles) {

@@ -59,6 +59,7 @@ public class PlayerController {
     private void mapModelDataToViewData()
     {
         playerView.updateView(playerModel.getPlayerId(), playerModel.getTileStackViewData());
+        playerInteractor.updateTiles(playerModel.getTileStackViewData());
     }
 
     public void printMessage(String s) {

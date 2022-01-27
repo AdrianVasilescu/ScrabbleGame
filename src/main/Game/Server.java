@@ -75,7 +75,13 @@ public class Server implements Runnable{
                 PlayerConnector playerConnector = new PlayerConnector(s);
                 System.out.println("New Connection!");
                 PlayerSession session = new PlayerSession(playerConnector);
-                Thread thread = new Thread(() -> handlePlayerSession(session));
+                Thread thread = new Thread(() -> {
+                    try {
+                        handlePlayerSession(session);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                 thread.start();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -113,8 +119,7 @@ public class Server implements Runnable{
         }
     }
 
-    private void handlePlayerSession(PlayerSession serverSession)
-    {
+    private void handlePlayerSession(PlayerSession serverSession) throws IOException {
         boolean playerNamed = false;
         boolean requestedGame = false;
 
@@ -127,6 +132,7 @@ public class Server implements Runnable{
                     String name = decodeAnnounce(message);
                     checkName(name);
                     sessions.put(name, serverSession);
+                    serverSession.setName(name);
                     playerNamed = true;
                     serverSession.sendMessage(encodeMessage(Protocol.BasicCommand.WELCOME.name(), name));
                 }
@@ -135,10 +141,8 @@ public class Server implements Runnable{
                     int numPlayers = decodeRequestGame(message);
                     synchronized (gameQueues)
                     {
-                        List<String> queue = gameQueues.get(numPlayers);
-                        if (queue == null) {
-                            queue = Collections.synchronizedList(new ArrayList<>());
-                        }
+                        List<String> queue = gameQueues.computeIfAbsent(numPlayers,
+                                k -> Collections.synchronizedList(new ArrayList<>()));
                         queue.add(serverSession.getName());
 
                         for(String name : queue)
@@ -148,6 +152,7 @@ public class Server implements Runnable{
                                     queue.size() + "", numPlayers + ""));
                         }
                         requestedGame = true;
+                        gameRequest.release();
                     }
                 }
             } catch (GameException e) {

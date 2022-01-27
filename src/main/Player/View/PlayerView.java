@@ -5,11 +5,11 @@ package main.Player.View;
  */
 public class PlayerView {
     private String id;
-    public char[] availableTiles;
+    public String availableTiles;
     /**
      * Updates the view
      */
-    public void updateView(String id, char[] availableTiles)
+    public void updateView(String id, String availableTiles)
     {
         this.id = id;
         this.availableTiles = availableTiles;
@@ -20,11 +20,6 @@ public class PlayerView {
      */
     public void printPlayer()
     {
-        System.out.print("java/Player " + id + " - Available tiles: [");
-        for(char c : availableTiles)
-        {
-            System.out.print("[" + c + "]");
-        }
-        System.out.println("]");
+        //TODO might remove this class
     }
 }
