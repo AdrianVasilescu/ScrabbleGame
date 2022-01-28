@@ -43,6 +43,7 @@ public class PlayerController {
 
     public void removeTiles(List<Tile> concernedTiles) {
         playerModel.removeTiles(concernedTiles);
+        mapModelDataToViewData();
     }
 
     /**

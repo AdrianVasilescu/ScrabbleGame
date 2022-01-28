@@ -42,13 +42,16 @@ public class GameSession implements Runnable{
             Thread t = new Thread(() -> listen(s, id));
             s.setPlayerThread(t);
             startGameParams += Protocol.UNIT_SEPARATOR + players.get(i).getName();
+            t.start();
         }
         broadcast(encodeMessage(Protocol.BasicCommand.STARTGAME.name(),
                 startGameParams.substring(1)));
         for(PlayerSession player : players)
         {
+            String firstTiles = tilePoolController.getTilesFromPool(7);
             player.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(),
-                    tilePoolController.getTilesFromPool(7)));
+                    firstTiles));
+            player.addTiles(firstTiles);
         }
         synchronized (turn)
         {

@@ -10,6 +10,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public final class GameSpecifics {
+    /**
+     * Empty slot on board
+     */
+    public static final char EMPTY_SLOT = '-';
+
+    /**
+     * The pattern to identify a number
+     */
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
     /**
      * The predefined multipliers of the board

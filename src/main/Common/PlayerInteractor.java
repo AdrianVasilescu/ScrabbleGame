@@ -9,16 +9,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.concurrent.Semaphore;
 
+import static main.Common.GameSpecifics.EMPTY_SLOT;
+
 public class PlayerInteractor {
-    private JTextField playerInput = new JTextField(20);
-    private JTextArea serverMessages = new JTextArea(10, 20);
-    private JTextArea gameState = new JTextArea();
-    private JTextArea availableTiles = new JTextArea(1, 14);
-    private GridBagConstraints c = new GridBagConstraints();
+    private final JTextField playerInput = new JTextField(20);
+    private final JTextArea serverMessages = new JTextArea(10, 20);
+    private final JPanel boardPanel = new JPanel(new GridLayout(0,16));
+    private final JLabel[][] boardLabels = new JLabel[16][16];
+    private final JTextArea availableTiles = new JTextArea(1, 14);
+    private final GridBagConstraints c = new GridBagConstraints();
     private final JPanel gui = new JPanel(new BorderLayout(3, 3));
     private volatile String input;
-    private Semaphore inputSem;
-    private Thread guiThread;
+    private final Semaphore inputSem;
+    private final Thread guiThread;
 
     public PlayerInteractor()
     {
@@ -27,14 +30,22 @@ public class PlayerInteractor {
         guiThread.start();
     }
 
-    public void updateBoard(String board)
+    public void updateBoard(char[][] board)
     {
-        this.gameState.setText(board);
+        for(int i = 0; i < 15; i++)
+        {
+            for(int j = 0; j < 15; j++)
+            {
+                if(board[i][j] != EMPTY_SLOT)
+                {
+                    populateLabel(boardLabels[i + 1][j + 1], String.valueOf(board[i][j]));
+                }
+            }
+        }
     }
 
     public void updateTiles(String tiles)
     {
-
         this.availableTiles.setText("AVAILABLE TILES:\n" + tiles);
     }
 
@@ -74,6 +85,34 @@ public class PlayerInteractor {
         c.weighty = 1/4;
         c.weightx = 1/2;
         playerInput.setEditable(false);
+        initPlayerInput();
+        gui.add(playerInput, c);
+
+        initBoard();
+        c.gridx = 1;
+        c.gridy = 0;
+        c.weighty = 1;
+        c.weightx = 1/2;
+        gui.add(boardPanel, c);
+
+        c.gridx = 1;
+        c.gridy = 1;
+        c.weighty = 1;
+        c.weightx = 1/2;
+        this.availableTiles.setText("AVAILABLE TILES:\n[ ]");
+        availableTiles.setEditable(false);
+        gui.add(availableTiles, c);
+
+        JFrame frame = new JFrame("Scrabble");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(gui);
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    private void initPlayerInput() {
         playerInput.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -115,30 +154,60 @@ public class PlayerInteractor {
                 }
             }
         });
-        gui.add(playerInput, c);
+    }
 
-        c.gridx = 1;
-        c.gridy = 0;
-        c.weighty = 1;
-        c.weightx = 1/2;
-        gameState.setEditable(false);
-        gui.add(gameState, c);
+    private void initBoard() {
+        for(int i = 0; i < 16; i ++)
+        {
+            for(int j = 0; j < 16; j++)
+            {
+                JLabel label = new JLabel("", SwingConstants.CENTER);
+                boardLabels[i][j] = label;
+                label.setMaximumSize(new Dimension(30, 30));
+                label.setPreferredSize(new Dimension(30, 30));
+                label.setMinimumSize(new Dimension(30, 30));
+                if(i != 0 && j != 0)
+                {
+                    label.setBorder(BorderFactory.createLineBorder(Color.black));
+                }
+                else
+                {
+                    label.setBackground(Color.orange);
+                }
+                if(i == 0)
+                {
+                    if(j != 0)
+                    {
+                        label.setText((char)(64 + j) + "");
+                    }
+                }
+                else if (j == 0)
+                {
+                    if(i != 0)
+                    {
+                        label.setText(i + "");
+                    }
+                }
+                else
+                {
+                    populateLabel(label, "");
+                }
+                label.setOpaque(true);
+                boardPanel.add(label);
+            }
+        }
+    }
 
-        c.gridx = 1;
-        c.gridy = 1;
-        c.weighty = 1;
-        c.weightx = 1/2;
-        this.availableTiles.setText("AVAILABLE TILES:\n[ ]");
-        availableTiles.setEditable(false);
-        gui.add(availableTiles, c);
-
-        JFrame frame = new JFrame("Scrabble");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setContentPane(gui);
-
-        //Display the window.
-        frame.pack();
-        frame.setVisible(true);
+    private void populateLabel(JLabel label, String c) {
+        if(c.isEmpty())
+        {
+            label.setBackground(Color.decode("#dddddd"));
+        }
+        else
+        {
+            label.setBackground(Color.decode("#f5f5dc"));
+        }
+        label.setText(c);
     }
 
     public void printMessage(String s) {

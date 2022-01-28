@@ -12,6 +12,7 @@ public class PlayerSession {
     public PlayerSession(PlayerConnector playerConnector) {
         this.playerConnector = playerConnector;
         this.score = 0;
+        this.tiles = "";
     }
 
     public String getName() {

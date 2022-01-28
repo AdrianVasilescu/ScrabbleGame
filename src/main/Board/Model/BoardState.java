@@ -7,6 +7,7 @@ import main.Exceptions.InvalidMoveException;
 
 import java.util.*;
 
+import static main.Common.GameSpecifics.EMPTY_SLOT;
 import static main.Common.GameSpecifics.getScoreOfCharacter;
 
 public class BoardState {
@@ -95,7 +96,7 @@ public class BoardState {
             {
                 if(board[i][j] == null)
                 {
-                    viewData[i][j] = '_';
+                    viewData[i][j] = EMPTY_SLOT;
                 }
                 else
                 {

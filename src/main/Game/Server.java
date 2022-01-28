@@ -100,7 +100,6 @@ public class Server implements Runnable{
                         if (gameQueues.get(numP).size() == numP)
                         {
                             List<PlayerSession> players = new ArrayList<>();
-                            String param = StringUtils.join(gameQueues.get(numP), Protocol.UNIT_SEPARATOR + "");
                             for(String playerName : gameQueues.get(numP))
                             {
                                 players.add(sessions.get(playerName));

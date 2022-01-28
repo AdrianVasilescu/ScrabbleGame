@@ -43,7 +43,6 @@ public class Player implements Runnable{
         this.playerInteractor = new PlayerInteractor();
         this.playerController = new PlayerController(playerInteractor);
         populateInitialBoardView();
-        playerInteractor.updateBoard(board.printBoard());
         this.stopGame = new Semaphore(0);
         this.playerSem = new Semaphore(0);
     }
@@ -61,7 +60,7 @@ public class Player implements Runnable{
     private void populateInitialBoardView() {
         char[][] initialBoard = new char[15][15];
         for(int i = 0; i < 15; i++)
-            Arrays.fill(initialBoard[i], '_');
+            Arrays.fill(initialBoard[i], EMPTY_SLOT);
         board.updateView(initialBoard);
     }
 
@@ -100,6 +99,7 @@ public class Player implements Runnable{
             // GET USER NAME
             playerController.printMessage("Please enter your name");
             String name = playerController.getInput();
+            playerInteractor.updateBoard(board.getBoard());
             gameConnector.sendMessage(buildAnnounce(name));
             // WAITING FOR HELLO
             String message = null;
@@ -276,7 +276,7 @@ public class Player implements Runnable{
                     boardView[t.getRow()][t.getColumn()] = t.getLetter();
                 }
                 board.updateView(boardView);
-                playerInteractor.updateBoard(board.printBoard());
+                playerInteractor.updateBoard(board.getBoard());
             }
             else if ("SWAP".equals(parts[2]))
             {

@@ -76,7 +76,7 @@ public class PlayerModel {
     public void removeTiles(List<Tile> concernedTiles) {
         for(Tile t : concernedTiles)
         {
-            this.tileStack.remove(t.getLetter());
+            this.tileStack.remove(new Character(t.getLetter()));
         }
     }
 }

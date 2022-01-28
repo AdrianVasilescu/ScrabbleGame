@@ -39,8 +39,8 @@ public class BoardController {
     /**
      * Prints the board
      */
-    public String printBoard(){
-        return boardView.printBoard();
+    public char[][] getBoard(){
+        return boardView.getBoard();
     }
 
     /**
@@ -59,7 +59,6 @@ public class BoardController {
         validateInput(tiles);
         int score = boardServerModel.handleTiles(tiles);
         mapModelDataToViewData();
-        boardView.printBoard();
 
         return score;
     }
