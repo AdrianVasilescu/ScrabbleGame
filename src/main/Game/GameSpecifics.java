@@ -157,9 +157,10 @@ public final class GameSpecifics {
      * @param start
      * @param align
      * @param word
+     * @param board
      * @return the list of tiles
      */
-    public static List<Tile> extractTiles(String start, String align, String word)
+    public static List<Tile> extractTiles(String start, String align, String word, char[][] board)
             throws InvalidInputException {
         List<Tile> ret = new ArrayList<>();
         char[] characters = word.toCharArray();
@@ -181,18 +182,23 @@ public final class GameSpecifics {
         {
             if("H".equals(align))
             {
-                ret.add(new Tile(row, column + i, characters[i]));
+                if(!(column + i < 15 && board[row][column + i] == characters[i]))
+                {
+                    ret.add(new Tile(row, column + i, characters[i]));
+                }
             }
             else if("V".equals(align))
             {
-                ret.add(new Tile(row + i, column, characters[i]));
+                if(!(row + i < 15 && board[row + i][column] == characters[i]))
+                {
+                    ret.add(new Tile(row + i, column, characters[i]));
+                }
             }
             else
             {
                 throw new InvalidInputException(Protocol.Error.E003);
             }
         }
-
         return ret;
     }
 
@@ -310,7 +316,7 @@ public final class GameSpecifics {
                 return true;
         } catch (InvalidMoveException e) {
             // EXCEPTION MEANS WORDS ARE NOT VALID
-            System.out.println(".");
+            //System.out.println(".");
             return false;
         }
         return false;

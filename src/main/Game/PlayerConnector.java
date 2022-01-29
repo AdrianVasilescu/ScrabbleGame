@@ -26,7 +26,7 @@ public class PlayerConnector {
     public void sendMessage(String message)
     {
         try {
-            System.out.println("SENDING: " + message);
+            //System.out.println("SENDING: " + message);
             dataOutputStream.writeChars(message);
         } catch (IOException e) {
             e.printStackTrace();
@@ -43,7 +43,7 @@ public class PlayerConnector {
             c = dataInputStream.readChar();
         }
 
-        System.out.println("GOT: " + message);
+        //System.out.println("GOT: " + message);
         return message;
     }
 }

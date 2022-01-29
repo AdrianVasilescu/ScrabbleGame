@@ -272,19 +272,16 @@ public class Player implements Runnable{
                 }
                 char[][] boardView = board.getCurrentView();
                 concernedTiles = new ArrayList<>();
-                for (Tile t : extractTiles(parts[3], parts[4], parts[5]))
+                for (Tile t : extractTiles(parts[3], parts[4], parts[5], boardView))
                 {
-                    if(boardView[t.getRow()][t.getColumn()] != t.getLetter())
+                    boardView[t.getRow()][t.getColumn()] = t.getLetter();
+                    if (Character.isLowerCase(t.getLetter()))
                     {
-                        boardView[t.getRow()][t.getColumn()] = t.getLetter();
-                        if (Character.isLowerCase(t.getLetter()))
-                        {
-                            concernedTiles.add(new Tile('!'));
-                        }
-                        else
-                        {
-                            concernedTiles.add(t);
-                        }
+                        concernedTiles.add(new Tile('!'));
+                    }
+                    else
+                    {
+                        concernedTiles.add(t);
                     }
                 }
                 board.updateView(boardView);

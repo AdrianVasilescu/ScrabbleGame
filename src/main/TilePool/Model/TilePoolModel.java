@@ -77,6 +77,7 @@ public class TilePoolModel {
      */
     private void initializeTileStack() {
         tileStack = new ArrayList<>();
+        /*
         tileStack.addAll(Collections.nCopies(9, 'A'));
         tileStack.addAll(Collections.nCopies(2, 'B'));
         tileStack.addAll(Collections.nCopies(2, 'C'));
@@ -104,15 +105,16 @@ public class TilePoolModel {
         tileStack.addAll(Collections.nCopies(2, 'Y'));
         tileStack.addAll(Collections.nCopies(1, 'Z'));
         tileStack.addAll(Collections.nCopies(2, '!'));
+        */
 
-        /* FOR SHORT GAMES - TESTING
+        //FOR SHORT GAMES - TESTING
         tileStack.addAll(Collections.nCopies(3, 'B'));
         tileStack.addAll(Collections.nCopies(4, 'A'));
         tileStack.addAll(Collections.nCopies(4, 'D'));
         tileStack.addAll(Collections.nCopies(3, 'E'));
         tileStack.addAll(Collections.nCopies(2, 'S'));
         tileStack.addAll(Collections.nCopies(1, '!'));
-        */
+
     }
 
     public boolean isEmpty() {

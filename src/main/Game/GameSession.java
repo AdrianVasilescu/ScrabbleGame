@@ -201,16 +201,15 @@ public class GameSession implements Runnable{
                 if (parts.length != 5) {
                     throw new InvalidMoveException(Protocol.Error.E003);
                 }
-                List<Tile> tiles = extractTiles(parts[2], parts[3], parts[4]);
-                int usedTilesCount = s.usedTiles(tiles, boardController.getBoard());
-                if (usedTilesCount < 0)
+                List<Tile> tiles = extractTiles(parts[2], parts[3], parts[4], boardController.getBoard());
+                if (tiles.size() == 0)
+                    throw new InvalidInputException(Protocol.Error.E005);
+                else if(!s.hasTiles(tiles))
                     throw new InvalidInputException(Protocol.Error.E008);
-                else if(usedTilesCount == 0)
-                    throw new InvalidMoveException(Protocol.Error.E005);
 
-                score = boardController.handleMove(extractTiles(parts[2], parts[3], parts[4]));
-                s.removeTiles(parts[4]);
-                shouldReceiveTiles = tilePoolController.getTilesFromPool(usedTilesCount);
+                score = boardController.handleMove(tiles);
+                s.removeTiles(tiles);
+                shouldReceiveTiles = tilePoolController.getTilesFromPool(tiles.size());
                 informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),
                         parts[1], parts[2], parts[3], parts[4]);
             } else if (parts[1].equals("SWAP")) {
@@ -224,8 +223,12 @@ public class GameSession implements Runnable{
                 informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),
                         parts[1], parts[2]);
             }
-            s.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), shouldReceiveTiles));
-            s.addTiles(shouldReceiveTiles);
+            
+            if(!shouldReceiveTiles.isEmpty())
+            {
+                s.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), shouldReceiveTiles));
+                s.addTiles(shouldReceiveTiles);
+            }
             broadcast(informMessage);
         } else {
             throw new InvalidMoveException(Protocol.Error.E002);

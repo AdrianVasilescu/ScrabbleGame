@@ -63,7 +63,7 @@ public class PlayerSession {
         return score;
     }
 
-    public int usedTiles(List<Tile> playedTiles, char[][] board) {
+    public int hasTiles(List<Tile> playedTiles, char[][] board) {
         int count = 0;
         String tileClone = tiles;
         for(Tile t : playedTiles)
@@ -89,7 +89,19 @@ public class PlayerSession {
         return count;
     }
 
+    public boolean hasTiles(List<Tile> tiles)
+    {
+        String tileString = "";
+        for(Tile t : tiles)
+        {
+            tileString += String.valueOf(t.getLetter());
+        }
+
+        return hasTiles(tileString);
+    }
+
     public boolean hasTiles(String swappedTiles) {
+        String tmpTiles = tiles;
         for(char c : swappedTiles.toCharArray())
         {
             String tileString = String.valueOf(c);
@@ -97,18 +109,19 @@ public class PlayerSession {
                 tileString = "!";
             }
 
-            if (!tiles.contains(tileString)) {
+            if (!tmpTiles.contains(tileString)) {
                 return false;
             }
+            tmpTiles = tmpTiles.replaceFirst(tileString, "");
         }
         return true;
     }
 
-    public void removeTiles(String requestedTiles) {
-        for(char c : requestedTiles.toCharArray())
+    public void removeTiles(List<Tile> requestedTiles) {
+        for(Tile t : requestedTiles)
         {
-            String tile = String.valueOf(c);
-            if(Character.isLowerCase(c))
+            String tile = String.valueOf(t.getLetter());
+            if(Character.isLowerCase(t.getLetter()))
             {
                 tile = "!";
             }

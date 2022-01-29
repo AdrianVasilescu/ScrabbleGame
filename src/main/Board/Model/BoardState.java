@@ -218,7 +218,7 @@ public class BoardState {
             column++;
         }
         score *= wordMultiplier;
-        System.out.println("Found word:" + word + " Score: " + score);
+        //System.out.println("Found word:" + word + " Score: " + score);
         if(!validateHorizontalWord(rootRow, rootColumn, word))
         {
             score = 0;
@@ -293,7 +293,7 @@ public class BoardState {
             row++;
         }
         score *= wordMultiplier;
-        System.out.println("Found word:" + word + " Score: " + score);
+        //System.out.println("Found word:" + word + " Score: " + score);
         if(!validateVerticalWord(rootRow, rootColumn, word))
         {
             score = 0;
