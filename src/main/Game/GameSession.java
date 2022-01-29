@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import static main.Common.GameSpecifics.*;
+import static main.Game.GameSpecifics.*;
 
 public class GameSession implements Runnable{
     private BoardController boardController;
@@ -99,8 +99,23 @@ public class GameSession implements Runnable{
     }
 
     private boolean gameOnGoing() {
-        //TODO find when there are no more moves
-        return !disconnect;
+        if(disconnect)
+        {
+            return false;
+        }
+
+        if(!tilePoolController.isEmpty())
+        {
+            return true;
+        }
+
+        for(PlayerSession p : players)
+        {
+         if(anyPossibleMoves(boardController.getBoardStateSnapshot(), p.getTiles()))
+             return true;
+        }
+
+        return false;
     }
 
     private void listen(PlayerSession s, int id) {

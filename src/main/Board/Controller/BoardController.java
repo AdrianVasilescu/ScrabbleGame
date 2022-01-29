@@ -1,6 +1,7 @@
 package main.Board.Controller;
 
 import lib.Protocol;
+import main.Board.Model.BoardState;
 import main.Board.View.BoardView;
 import main.Board.Model.BoardServerModel;
 import main.Common.Tile;
@@ -82,5 +83,9 @@ public class BoardController {
         char[][] boardViewData = boardServerModel.getBoardViewData();
 
         boardView.updateView(boardViewData);
+    }
+
+    public BoardState getBoardStateSnapshot() {
+        return boardServerModel.getBoardStateSnapshot();
     }
 }

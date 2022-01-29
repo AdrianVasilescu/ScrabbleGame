@@ -1,14 +1,14 @@
 package main.Board.Model;
 
 import lib.Protocol;
-import main.Common.GameSpecifics;
+import main.Game.GameSpecifics;
 import main.Common.Tile;
 import main.Exceptions.InvalidMoveException;
 
 import java.util.*;
 
-import static main.Common.GameSpecifics.EMPTY_SLOT;
-import static main.Common.GameSpecifics.getScoreOfCharacter;
+import static main.Game.GameSpecifics.EMPTY_SLOT;
+import static main.Game.GameSpecifics.getScoreOfCharacter;
 
 public class BoardState {
     /**

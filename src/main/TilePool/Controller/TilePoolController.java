@@ -59,4 +59,8 @@ public class TilePoolController {
      tilePoolView.updateView(tilePoolModel.getTilesViewData());
      tilePoolView.printTilePool();
     }
+
+    public boolean isEmpty() {
+        return this.tilePoolModel.isEmpty();
+    }
 }

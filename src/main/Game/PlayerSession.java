@@ -3,6 +3,7 @@ package main.Game;
 import main.Common.Tile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerSession {
@@ -67,6 +68,7 @@ public class PlayerSession {
         String tileClone = tiles;
         for(Tile t : playedTiles)
         {
+            System.out.println("Player wants to play " + t + " and has " + tiles);
             if(board[t.getRow()][t.getColumn()] != t.getLetter()) {
                 String tileString = String.valueOf(t.getLetter());
                 if (Character.isLowerCase(t.getLetter())) {
@@ -79,6 +81,7 @@ public class PlayerSession {
                 }
                 else
                 {
+                    System.out.println("oops...tried to play " + tileString + " but has only " + tileClone);
                     return -1;
                 }
             }
@@ -125,5 +128,14 @@ public class PlayerSession {
     public void disconnect()
     {
         this.disconnected = true;
+    }
+
+    public List<Character> getTiles() {
+        List<Character> ret = new ArrayList<>();
+        for(char  c : tiles.toCharArray())
+        {
+            ret.add(c);
+        }
+        return ret;
     }
 }

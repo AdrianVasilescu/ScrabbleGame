@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import static java.lang.Thread.sleep;
-import static main.Common.GameSpecifics.*;
+import static main.Game.GameSpecifics.*;
 
 public class Player implements Runnable{
     private static final char LOCAL_DELIMITER = '-';

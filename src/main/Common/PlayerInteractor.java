@@ -9,7 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.concurrent.Semaphore;
 
-import static main.Common.GameSpecifics.EMPTY_SLOT;
+import static main.Game.GameSpecifics.EMPTY_SLOT;
 
 public class PlayerInteractor {
     private final JTextField playerInput = new JTextField(20);

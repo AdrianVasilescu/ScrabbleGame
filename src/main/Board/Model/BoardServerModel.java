@@ -83,4 +83,8 @@ public class BoardServerModel {
 
         return ret;
     }
+
+    public BoardState getBoardStateSnapshot() {
+        return this.board.cloneState();
+    }
 }

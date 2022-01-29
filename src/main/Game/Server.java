@@ -1,6 +1,5 @@
 package main.Game;
 
-import com.sun.deploy.util.StringUtils;
 import lib.Protocol;
 import main.Exceptions.*;
 
@@ -10,8 +9,8 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
-import static main.Common.GameSpecifics.decodeRequestGame;
-import static main.Common.GameSpecifics.encodeMessage;
+import static main.Game.GameSpecifics.decodeRequestGame;
+import static main.Game.GameSpecifics.encodeMessage;
 
 public class Server implements Runnable{
     private Map<String, PlayerSession> sessions;
