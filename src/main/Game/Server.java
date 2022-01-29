@@ -99,7 +99,7 @@ public class Server implements Runnable{
                     for (int numP : gameQueues.keySet()) {
                         if (gameQueues.get(numP).size() == numP)
                         {
-                            List<PlayerSession> players = new ArrayList<>();
+                            List<PlayerSession> players = Collections.synchronizedList(new ArrayList<>());
                             for(String playerName : gameQueues.get(numP))
                             {
                                 players.add(sessions.get(playerName));

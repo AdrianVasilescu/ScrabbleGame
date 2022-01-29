@@ -10,8 +10,6 @@ import main.Exceptions.InvalidMoveException;
 
 import java.util.List;
 
-import static main.Common.GameSpecifics.extractTiles;
-
 /**
  * The java.Board Controller - handles interactions
  */
@@ -45,17 +43,14 @@ public class BoardController {
 
     /**
      * Handles input tiles from a player
-     * @param start the start tile
-     * @param align vertical or horizontal
-     * @param word the word
+     * @param tiles the tiles
      * @return the score
      * @throws InvalidInputException if the input is not valid
      * @throws InvalidMoveException if the move cannot be done on the current state of the board
      * @throws InitialWordNotOnCenterException if the first word placed on board does not cover the center tile
      */
-    public int handleMove(String start, String align, String word)
+    public int handleMove(List<Tile> tiles)
             throws InvalidMoveException, InvalidInputException, InitialWordNotOnCenterException {
-        List<Tile> tiles = extractTiles(start, align, word);
         validateInput(tiles);
         int score = boardServerModel.handleTiles(tiles);
         mapModelDataToViewData();

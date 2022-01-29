@@ -1,6 +1,8 @@
 package main.Common;
 
 import lib.Protocol;
+import lib.checker.java.InMemoryScrabbleWordChecker;
+import lib.checker.java.ScrabbleWordChecker;
 import main.Board.Model.BoardState;
 import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
@@ -58,16 +60,17 @@ public final class GameSpecifics {
             {'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L'},
             {'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W'}};
 
-    //private static final ScrabbleWordChecker CHECKER;
+    private static final ScrabbleWordChecker CHECKER = new InMemoryScrabbleWordChecker();
     private GameSpecifics(){}
 
     public static boolean checkWord(String word)
     {
-        // TODO
-        return true;
+        ScrabbleWordChecker.WordResponse wordResponse = CHECKER.isValidWord(word);
+        System.out.println(word + " checked : " + wordResponse);
+        return wordResponse != null;
     }
 
-    public static int getRow(String character) throws InvalidInputException {
+    public static int getCol(String character) throws InvalidInputException {
         switch (character)
         {
             case "A":
@@ -159,14 +162,19 @@ public final class GameSpecifics {
             throws InvalidInputException {
         List<Tile> ret = new ArrayList<>();
         char[] characters = word.toCharArray();
-        int row = getRow(start.substring(0, 1));
-        int column = -1;
+        int column = getCol(start.substring(0, 1));
+        int row = -1;
         try{
-            column = Integer.parseInt(start.substring(1)) - 1;
+            row = Integer.parseInt(start.substring(1)) - 1;
         }
         catch (NumberFormatException e)
         {
             throw new InvalidInputException(Protocol.Error.E003);
+        }
+
+        if(row < 0 || row > 14)
+        {
+            throw new InvalidInputException(Protocol.Error.E004);
         }
         for(int i = 0; i < word.length(); i++)
         {
@@ -257,7 +265,7 @@ public final class GameSpecifics {
             int c = 0;
             while(c < maxWordLen)
             {
-
+                // TODO
             }
         }
         return false;

@@ -10,6 +10,7 @@ import main.TilePool.View.TilePoolView;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -270,10 +271,21 @@ public class Player implements Runnable{
                     throw new InvalidInputException(Protocol.Error.E003);
                 }
                 char[][] boardView = board.getCurrentView();
-                concernedTiles = extractTiles(parts[3], parts[4], parts[5]);
-                for (Tile t : concernedTiles)
+                concernedTiles = new ArrayList<>();
+                for (Tile t : extractTiles(parts[3], parts[4], parts[5]))
                 {
-                    boardView[t.getRow()][t.getColumn()] = t.getLetter();
+                    if(boardView[t.getRow()][t.getColumn()] != t.getLetter())
+                    {
+                        boardView[t.getRow()][t.getColumn()] = t.getLetter();
+                        if (Character.isLowerCase(t.getLetter()))
+                        {
+                            concernedTiles.add(new Tile('!'));
+                        }
+                        else
+                        {
+                            concernedTiles.add(t);
+                        }
+                    }
                 }
                 board.updateView(boardView);
                 playerInteractor.updateBoard(board.getBoard());
@@ -307,7 +319,7 @@ public class Player implements Runnable{
         else if (Protocol.BasicCommand.GAMEOVER.name().equals(parts[0]))
         {
             msg = "Game finished with the status" + parts[1] + ".\nScores:\n";
-            for (int i = 2; i < parts.length; i += 2)
+            for (int i = 2; i < parts.length ; i += 2)
             {
                 msg += "Player " + parts[i] + ", score: " + parts[i + 1] + "\n";
             }

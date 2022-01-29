@@ -53,9 +53,13 @@ public class BoardState {
      * @param tile
      * @throws InvalidMoveException if the position is already occupied
      */
-    public void placeTile(Tile tile) throws InvalidMoveException {
+    public void placeTile(Tile tile) throws InvalidMoveException
+    {
         if(isPositionOccupied(tile.getRow(), tile.getColumn()))
-            throw new InvalidMoveException(Protocol.Error.E005);
+        {
+            if(board[tile.getRow()][tile.getColumn()].getLetter() != tile.getLetter())
+                throw new InvalidMoveException(Protocol.Error.E005);
+        }
         board[tile.getRow()][tile.getColumn()] = tile;
     }
 
@@ -313,7 +317,6 @@ public class BoardState {
      * @throws InvalidMoveException in case the word is not valid
      */
     private boolean validateVerticalWord(int row, int column, String word) throws InvalidMoveException {
-        GameSpecifics.checkWord(word);
         int position = row * 15 + column;
         if(verticalWords.containsKey(position) && verticalWords.get(position).equals(word))
         {
@@ -324,7 +327,7 @@ public class BoardState {
         {
             throw new InvalidMoveException(Protocol.Error.E006);
         }
-        return false;
+        return true;
     }
 
     @Override

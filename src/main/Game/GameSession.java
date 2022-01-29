@@ -2,6 +2,7 @@ package main.Game;
 
 import lib.Protocol;
 import main.Board.Controller.BoardController;
+import main.Common.Tile;
 import main.Exceptions.*;
 import main.TilePool.Controller.TilePoolController;
 
@@ -9,8 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import static main.Common.GameSpecifics.encodeMessage;
-import static main.Common.GameSpecifics.extractTilesFromCommand;
+import static main.Common.GameSpecifics.*;
 
 public class GameSession implements Runnable{
     private BoardController boardController;
@@ -69,6 +69,7 @@ public class GameSession implements Runnable{
             }
         } while(gameOnGoing());
 
+        broadcast(buildGameover());
         // END GAME
         for(PlayerSession s : players)
         {
@@ -76,9 +77,30 @@ public class GameSession implements Runnable{
         }
     }
 
+    private String buildGameover() {
+        String scores = "";
+        String result = "WIN";
+
+        for(PlayerSession p : players)
+        {
+            scores +=  Protocol.UNIT_SEPARATOR + p.getName() + Protocol.UNIT_SEPARATOR;
+            if(p.isDisconnected())
+            {
+                result = "DISCONNECT";
+                scores += "0";
+            }
+            else
+            {
+                scores += p.getScore();
+            }
+        }
+        return encodeMessage(Protocol.BasicCommand.GAMEOVER.name(),
+                result + Protocol.UNIT_SEPARATOR + scores);
+    }
+
     private boolean gameOnGoing() {
         //TODO find when there are no more moves
-        return disconnect;
+        return !disconnect;
     }
 
     private void listen(PlayerSession s, int id) {
@@ -109,10 +131,11 @@ public class GameSession implements Runnable{
             } catch (IOException e) {
                 // PLAYER DISCONNECTED
                 disconnect = true;
+                s.disconnect();
                 broadcast(encodeMessage(Protocol.BasicCommand.PLAYERDISCONNECTED.name(),
                         s.getName()));
-                s.endSession();
                 turnEnd.release();
+                break;
             }
         }
     }
@@ -134,10 +157,14 @@ public class GameSession implements Runnable{
         turnEnd.release();
     }
 
-    private void broadcast(String message) {
+    private void broadcast(String message)
+    {
         for(PlayerSession s : players)
         {
-            s.sendMessage(message);
+            if(!s.isDisconnected())
+            {
+                s.sendMessage(message);
+            }
         }
     }
 
@@ -159,12 +186,16 @@ public class GameSession implements Runnable{
                 if (parts.length != 5) {
                     throw new InvalidMoveException(Protocol.Error.E003);
                 }
-                if (!s.hasTiles(parts[4]))
+                List<Tile> tiles = extractTiles(parts[2], parts[3], parts[4]);
+                int usedTilesCount = s.usedTiles(tiles, boardController.getBoard());
+                if (usedTilesCount < 0)
                     throw new InvalidInputException(Protocol.Error.E008);
+                else if(usedTilesCount == 0)
+                    throw new InvalidMoveException(Protocol.Error.E005);
 
-                score = boardController.handleMove(parts[2], parts[3], parts[4]);
+                score = boardController.handleMove(extractTiles(parts[2], parts[3], parts[4]));
                 s.removeTiles(parts[4]);
-                shouldReceiveTiles = tilePoolController.getTilesFromPool(parts[4].length());
+                shouldReceiveTiles = tilePoolController.getTilesFromPool(usedTilesCount);
                 informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),
                         parts[1], parts[2], parts[3], parts[4]);
             } else if (parts[1].equals("SWAP")) {

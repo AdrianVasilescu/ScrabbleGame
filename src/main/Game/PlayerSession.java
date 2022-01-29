@@ -1,6 +1,9 @@
 package main.Game;
 
+import main.Common.Tile;
+
 import java.io.IOException;
+import java.util.List;
 
 public class PlayerSession {
     private PlayerConnector playerConnector;
@@ -8,6 +11,7 @@ public class PlayerSession {
     private Thread playerThread;
     private String tiles;
     private int score;
+    private boolean disconnected = false;
 
     public PlayerSession(PlayerConnector playerConnector) {
         this.playerConnector = playerConnector;
@@ -58,17 +62,39 @@ public class PlayerSession {
         return score;
     }
 
-    public boolean hasTiles(String requestedTiles) {
-        for(char c : requestedTiles.toCharArray())
+    public int usedTiles(List<Tile> playedTiles, char[][] board) {
+        int count = 0;
+        String tileClone = tiles;
+        for(Tile t : playedTiles)
         {
-            String tile = String.valueOf(c);
-            if(Character.isLowerCase(c))
-            {
-                tile = "!";
+            if(board[t.getRow()][t.getColumn()] != t.getLetter()) {
+                String tileString = String.valueOf(t.getLetter());
+                if (Character.isLowerCase(t.getLetter())) {
+                    tileString = "!";
+                }
+
+                if (tileClone.contains(tileString)) {
+                    tileClone = tileClone.replaceFirst(tileString, "");
+                    count++;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+        return count;
+    }
+
+    public boolean hasTiles(String swappedTiles) {
+        for(char c : swappedTiles.toCharArray())
+        {
+            String tileString = String.valueOf(c);
+            if (Character.isLowerCase(c)) {
+                tileString = "!";
             }
 
-            if(!tiles.contains(tile))
-            {
+            if (!tiles.contains(tileString)) {
                 return false;
             }
         }
@@ -90,5 +116,14 @@ public class PlayerSession {
     public void addTiles(String newTiles)
     {
         this.tiles += newTiles;
+    }
+
+    public boolean isDisconnected() {
+        return disconnected;
+    }
+
+    public void disconnect()
+    {
+        this.disconnected = true;
     }
 }
