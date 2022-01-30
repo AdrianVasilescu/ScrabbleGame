@@ -50,7 +50,7 @@ public class PlayerController {
      * Returns the player input
      * @return
      */
-    public String getInput() {
+    public String getInput() throws InterruptedException {
         return playerInteractor.getInput();
     }
 

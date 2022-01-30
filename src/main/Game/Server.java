@@ -50,6 +50,10 @@ public class Server implements Runnable{
 
             connectionsThread.join();
             gameQueuesHandlerThread.join();
+            for(Thread t : games)
+            {
+                t.join();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -74,18 +78,22 @@ public class Server implements Runnable{
                 PlayerConnector playerConnector = new PlayerConnector(s);
                 System.out.println("New Connection!");
                 PlayerSession session = new PlayerSession(playerConnector);
-                Thread thread = new Thread(() -> {
-                    try {
-                        handlePlayerSession(session);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-                thread.start();
+                putPlayerInLobby(session);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void putPlayerInLobby(PlayerSession session) {
+        Thread thread = new Thread(() -> {
+            try {
+                handlePlayerSession(session);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
     }
 
     private void superviseQueues() {
@@ -104,7 +112,14 @@ public class Server implements Runnable{
                                 players.add(sessions.get(playerName));
                             }
                             GameSession gameSession = new GameSession(players);
-                            Thread game = new Thread(gameSession);
+                            Thread game = new Thread(() ->
+                            {
+                                gameSession.run();
+                                for(PlayerSession player : players)
+                                {
+                                    putPlayerInLobby(player);
+                                }
+                            });
                             game.start();
                             games.add(game);
                             gameQueues.remove(numP);
@@ -118,7 +133,7 @@ public class Server implements Runnable{
     }
 
     private void handlePlayerSession(PlayerSession serverSession) throws IOException {
-        boolean playerNamed = false;
+        boolean playerNamed = !serverSession.getName().isEmpty();
         boolean requestedGame = false;
 
         while(!playerNamed || !requestedGame)

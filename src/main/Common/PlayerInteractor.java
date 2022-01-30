@@ -3,10 +3,7 @@ package main.Common;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.util.concurrent.Semaphore;
 
 import static main.Game.GameSpecifics.EMPTY_SLOT;
@@ -19,6 +16,7 @@ public class PlayerInteractor {
     private final JTextArea availableTiles = new JTextArea(1, 14);
     private final GridBagConstraints c = new GridBagConstraints();
     private final JPanel gui = new JPanel(new BorderLayout(3, 3));
+    private final JFrame frame = new JFrame("Scrabble");
     private volatile String input;
     private final Semaphore inputSem;
     private final Thread guiThread;
@@ -49,15 +47,10 @@ public class PlayerInteractor {
         this.availableTiles.setText("AVAILABLE TILES:\n" + tiles);
     }
 
-    public String getInput()
-    {
+    public String getInput() throws InterruptedException {
         String ret;
-        try {
-            playerInput.setEditable(true);
-            inputSem.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        playerInput.setEditable(true);
+        inputSem.acquire();
         ret = this.input;
         this.input = null;
 
@@ -103,13 +96,18 @@ public class PlayerInteractor {
         availableTiles.setEditable(false);
         gui.add(availableTiles, c);
 
-        JFrame frame = new JFrame("Scrabble");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(gui);
 
         //Display the window.
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void closeGui()
+    {
+        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+        guiThread.interrupt();
     }
 
     private void initPlayerInput() {

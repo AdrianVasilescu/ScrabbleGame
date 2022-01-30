@@ -27,8 +27,7 @@ public class Player implements Runnable{
     private PlayerInteractor playerInteractor;
     private String name;
     private volatile boolean connected = false;
-    private volatile boolean gameOngoing = false;
-    private volatile boolean gameRequested = false;
+    private volatile boolean gameOn = false;
     private final Semaphore stopGame;
     private final Semaphore playerSem;
     private Thread playerInputThread;
@@ -67,34 +66,50 @@ public class Player implements Runnable{
 
     @Override
     public void run() {
-        connectToGame();
-        playerInputThread = new Thread(() -> listenToPlayer());
-        serverConnecitonThread = new Thread(() -> listenToServer());
-        serverConnecitonThread.start();
-
         try {
-            // WAIT FOR GAME TO START
-            playerSem.acquire();
-            playerInputThread.start();
+            connectToGame();
+            Thread gameThread = playGame();
+            serverConnecitonThread = new Thread(() -> listenToServer());
+            playerInputThread = new Thread(() -> listenToPlayer());
+            serverConnecitonThread.start();
 
-            // GAME ONGOING
-            stopGame.acquire();
-
-            // STOP THE GAME
-            stopGame();
-            playerInputThread.join();
+            gameThread.join();
+            serverConnecitonThread.interrupt();
             serverConnecitonThread.join();
-        } catch (InterruptedException e) {
+            playerInputThread.interrupt();
+            playerInputThread.join();
+            playerInteractor.closeGui();
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void stopGame() {
-        playerInputThread.interrupt();
-        serverConnecitonThread.interrupt();
+    private Thread playGame() {
+        Thread gameThread = new Thread(() -> {
+            while(connected)  {
+                try {
+                    requestGame();
+
+                    // WAIT FOR GAME TO START
+                    playerSem.acquire();
+                    playerInputThread.start();
+
+                    // GAME ONGOING
+                    stopGame.acquire();
+                    gameOn = false;
+                    playerInputThread.interrupt();
+                    playerInputThread.join();
+                } catch (InterruptedException | IOException e) {
+                    System.out.println("Game connection closed.");
+                    playerInputThread.interrupt();
+                }
+            }
+        });
+        gameThread.start();
+        return gameThread;
     }
 
-    private void connectToGame() {
+    private void connectToGame() throws InterruptedException, IOException {
         while(!connected)
         {
             // GET USER NAME
@@ -104,24 +119,21 @@ public class Player implements Runnable{
             gameConnector.sendMessage(buildAnnounce(name));
             // WAITING FOR HELLO
             String message = null;
-            try {
-                message = gameConnector.getNextMessage();
-                playerController.printMessageFromServer(message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            message = gameConnector.getNextMessage();
+            playerController.printMessageFromServer(message);
 
             try {
                 doAction(message);
             } catch (GameException e) {
-                e.printStackTrace();
                 playerController.printMessage("Error: "
                         + e.getError() + ": "
                         + Protocol.Error.valueOf(e.getError().name()).getDescription());
             }
         }
+    }
 
-        while(!gameRequested)
+    private void requestGame() throws InterruptedException, IOException {
+        while(!gameOn)
         {
             playerController.printMessage("Going to request game.\n" +
                     "How many players do you want?(2/3/4)");
@@ -135,29 +147,25 @@ public class Player implements Runnable{
             {
                 gameConnector.sendMessage(Protocol.BasicCommand.REQUESTGAME.name() +
                         Protocol.UNIT_SEPARATOR + message.trim() + Protocol.MESSAGE_SEPARATOR);
-                gameRequested = true;
+                gameOn = true;
             }
         }
     }
 
-    private void listenToPlayer()
-    {
-        while(connected)
-        {
-            if(gameOngoing) {
-                try {
-                    playerSem.acquire();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+    private void listenToPlayer() {
+        try {
+            while (gameOn) {
+                playerSem.acquire();
+                playerController.printMessage("Enter your command!");
+                String command = playerController.getInput();
+                playerController.printMessage("Processing Command...");
+                gameConnector.sendMessage(prepareLocalCommand(command));
+                playerController.printMessage("Command sent to server!");
             }
-            else
-            playerController.printMessage("Enter your command!");
-            String command = playerController.getInput();
-            playerController.printMessage("Processing Command...");
-            gameConnector.sendMessage(prepareLocalCommand(command));
-            playerController.printMessage("Command sent to server!");
+        } catch (InterruptedException | IOException e) {
+            System.out.println("Player connection interrupted.");
         }
+        System.out.println("Player connection closed.");
     }
 
     private String prepareLocalCommand(String command) {
@@ -179,15 +187,12 @@ public class Player implements Runnable{
                         + Protocol.Error.valueOf(e.getError().name()).getDescription());
             } catch (IOException e) {
                 connected = false;
-                // TODO disconnect from server
-                e.printStackTrace();
-            }
-            try {
-                sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                this.gameConnector.disconnect();
+                stopGame.release();
+                System.out.println("Server connection interrupted.");
             }
         }
+        System.out.println("Server connection closed.");
     }
 
     private void doAction(String message)
@@ -229,7 +234,6 @@ public class Player implements Runnable{
                 players += parts[i] + ",";
             }
             msg = "Players:" + players;
-            gameOngoing = true;
             playerSem.release();
         } else if (Protocol.BasicCommand.NOTIFYTURN.name().equals(parts[0]))
         {

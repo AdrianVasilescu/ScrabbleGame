@@ -23,14 +23,8 @@ public class PlayerConnector {
         }
     }
 
-    public void sendMessage(String message)
-    {
-        try {
-            //System.out.println("SENDING: " + message);
-            dataOutputStream.writeChars(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void sendMessage(String message) throws IOException {
+        dataOutputStream.writeChars(message);
     }
 
     public String getNextMessage() throws IOException {
@@ -43,7 +37,18 @@ public class PlayerConnector {
             c = dataInputStream.readChar();
         }
 
-        //System.out.println("GOT: " + message);
+        System.out.println("GOT: " + message);
         return message;
+    }
+
+    public void disconnect()
+    {
+        try {
+            this.dataOutputStream.close();
+            this.dataInputStream.close();
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

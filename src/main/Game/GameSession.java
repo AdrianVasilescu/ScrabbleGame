@@ -18,6 +18,7 @@ public class GameSession implements Runnable{
     private List<PlayerSession> players;
     private Semaphore turnEnd;
     private int currentPlayer;
+    private volatile boolean gameOn;
     private final Object turn;
     private volatile boolean disconnect = false;
 
@@ -34,42 +35,44 @@ public class GameSession implements Runnable{
         //START GAME
         String startGameParams = "";
         currentPlayer = -1;
+        gameOn = true;
 
-        for(int i = 0; i < players.size(); i++)
-        {
-            int id = i;
-            PlayerSession s = players.get(i);
-            Thread t = new Thread(() -> listen(s, id));
-            s.setPlayerThread(t);
-            startGameParams += Protocol.UNIT_SEPARATOR + players.get(i).getName();
-            t.start();
-        }
-        broadcast(encodeMessage(Protocol.BasicCommand.STARTGAME.name(),
-                startGameParams.substring(1)));
-        for(PlayerSession player : players)
-        {
-            String firstTiles = tilePoolController.getTilesFromPool(7);
-            player.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(),
-                    firstTiles));
-            player.addTiles(firstTiles);
-        }
-        synchronized (turn)
-        {
-            passTurn();
-        }
-        // GAME ONGOING
-
-        //Check game status
-        do
-        {
-            try {
-                turnEnd.acquire();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        try {
+            for (int i = 0; i < players.size(); i++) {
+                int id = i;
+                PlayerSession s = players.get(i);
+                Thread t = new Thread(() -> {
+                    try {
+                        listen(s, id);
+                    } catch (IOException e) {
+                        System.out.println("Connection failure on session(" + s.getName() +"): " + e.getMessage());
+                    }
+                });
+                s.setPlayerThread(t);
+                startGameParams += Protocol.UNIT_SEPARATOR + players.get(i).getName();
+                t.start();
             }
-        } while(gameOnGoing());
+            broadcast(encodeMessage(Protocol.BasicCommand.STARTGAME.name(),
+                    startGameParams.substring(1)));
+            for (PlayerSession player : players) {
+                String firstTiles = tilePoolController.getTilesFromPool(7);
+                player.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), firstTiles));
+                player.addTiles(firstTiles);
+            }
+            synchronized (turn) {
+                passTurn();
+            }
+            // GAME ONGOING
 
-        broadcast(buildGameover());
+            //Check game status
+            do {
+                turnEnd.acquire();
+            } while (gameOnGoing());
+
+            broadcast(buildGameover());
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error running the game:" + e.getMessage());
+        }
         // END GAME
         for(PlayerSession s : players)
         {
@@ -95,7 +98,7 @@ public class GameSession implements Runnable{
             }
         }
         return encodeMessage(Protocol.BasicCommand.GAMEOVER.name(),
-                result + Protocol.UNIT_SEPARATOR + scores);
+                result + scores);
     }
 
     private boolean gameOnGoing() {
@@ -118,9 +121,9 @@ public class GameSession implements Runnable{
         return false;
     }
 
-    private void listen(PlayerSession s, int id) {
+    private void listen(PlayerSession s, int id) throws IOException {
         String message = "";
-        while(true)
+        while(gameOn)
         {
             try{
                 message = s.getNextMessage();
@@ -146,6 +149,7 @@ public class GameSession implements Runnable{
             } catch (IOException e) {
                 // PLAYER DISCONNECTED
                 disconnect = true;
+                gameOn = false;
                 s.disconnect();
                 broadcast(encodeMessage(Protocol.BasicCommand.PLAYERDISCONNECTED.name(),
                         s.getName()));
@@ -155,7 +159,7 @@ public class GameSession implements Runnable{
         }
     }
 
-    private void passTurn() {
+    private void passTurn() throws IOException {
         currentPlayer = (currentPlayer + 1) % players.size();
         String playerName = players.get(currentPlayer).getName();
         for(int j = 0; j < players.size(); j++)
@@ -172,7 +176,7 @@ public class GameSession implements Runnable{
         turnEnd.release();
     }
 
-    private void broadcast(String message)
+    private void broadcast(String message) throws IOException
     {
         for(PlayerSession s : players)
         {
@@ -184,7 +188,7 @@ public class GameSession implements Runnable{
     }
 
     private int doAction(String message, PlayerSession s)
-            throws InvalidInputException, InitialWordNotOnCenterException, InvalidMoveException, NotEnoughTilesException {
+            throws InvalidInputException, InitialWordNotOnCenterException, InvalidMoveException, NotEnoughTilesException, IOException {
         if(message == null)
             return 0;
 
@@ -223,7 +227,7 @@ public class GameSession implements Runnable{
                 informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),
                         parts[1], parts[2]);
             }
-            
+
             if(!shouldReceiveTiles.isEmpty())
             {
                 s.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), shouldReceiveTiles));

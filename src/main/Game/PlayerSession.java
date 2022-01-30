@@ -8,7 +8,7 @@ import java.util.List;
 
 public class PlayerSession {
     private PlayerConnector playerConnector;
-    private String name;
+    private String name = "";
     private Thread playerThread;
     private String tiles;
     private int score;
@@ -32,12 +32,8 @@ public class PlayerSession {
         return playerConnector.getNextMessage();
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
         playerConnector.sendMessage(message);
-    }
-
-    public Thread getPlayerThread() {
-        return playerThread;
     }
 
     public void setPlayerThread(Thread playerThread) {
@@ -45,7 +41,7 @@ public class PlayerSession {
     }
 
     public void endSession() {
-        this.score = -1;
+        this.score = 0;
         this.playerThread.interrupt();
         try {
             this.playerThread.join();
@@ -61,32 +57,6 @@ public class PlayerSession {
 
     public int getScore() {
         return score;
-    }
-
-    public int hasTiles(List<Tile> playedTiles, char[][] board) {
-        int count = 0;
-        String tileClone = tiles;
-        for(Tile t : playedTiles)
-        {
-            System.out.println("Player wants to play " + t + " and has " + tiles);
-            if(board[t.getRow()][t.getColumn()] != t.getLetter()) {
-                String tileString = String.valueOf(t.getLetter());
-                if (Character.isLowerCase(t.getLetter())) {
-                    tileString = "!";
-                }
-
-                if (tileClone.contains(tileString)) {
-                    tileClone = tileClone.replaceFirst(tileString, "");
-                    count++;
-                }
-                else
-                {
-                    System.out.println("oops...tried to play " + tileString + " but has only " + tileClone);
-                    return -1;
-                }
-            }
-        }
-        return count;
     }
 
     public boolean hasTiles(List<Tile> tiles)
