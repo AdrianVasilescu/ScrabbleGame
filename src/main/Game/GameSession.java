@@ -140,11 +140,6 @@ public class GameSession implements Runnable{
             catch (GameException e)
             {
                 s.sendMessage(encodeMessage(Protocol.BasicCommand.ERROR.name(), e.getError().name()));
-                if(e.isReturnTiles())
-                {
-                    s.sendMessage((encodeMessage(Protocol.BasicCommand.NEWTILES.name(),
-                            extractTilesFromCommand(message))));
-                }
                 passTurn();
             } catch (IOException e) {
                 // PLAYER DISCONNECTED

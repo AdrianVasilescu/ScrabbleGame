@@ -1,5 +1,6 @@
 package test;
 
+import lib.Protocol;
 import main.Board.Model.BoardState;
 import main.Common.Tile;
 import main.Exceptions.InvalidMoveException;
@@ -41,7 +42,7 @@ public class BoardStateTest {
     }
 
     @Test
-    public void scoreTest() throws InvalidMoveException {
+    public void scoreFailTest() throws InvalidMoveException {
         boardState.placeTile(new Tile(7,7,'A'));
         boardState.placeTile(new Tile(7,8,'B'));
         boardState.placeTile(new Tile(7,9,'C'));
@@ -49,24 +50,42 @@ public class BoardStateTest {
         boardState.placeTile(new Tile(6,7,'B'));
         boardState.placeTile(new Tile(5,7,'C'));
         boardState.placeTile(new Tile(4,7,'D'));
-        assertEquals(34, boardState.getScoreForPlay());
+        try {
+            boardState.getScoreForPlay();
+        }
+        catch (InvalidMoveException e)
+        {
+            assertEquals(e.getError(), Protocol.Error.E006);
+        }
+    }
+
+    @Test
+    public void scoreGoodtest() throws InvalidMoveException {
+        boardState.placeTile(new Tile(7,7,'T'));
+        boardState.placeTile(new Tile(7,8,'E'));
+        boardState.placeTile(new Tile(7,9,'S'));
+        boardState.placeTile(new Tile(7,10,'T'));
+        boardState.placeTile(new Tile(8,7,'S'));
+        boardState.placeTile(new Tile(6,7,'S'));
+        boardState.placeTile(new Tile(5,7,'E'));
+        boardState.placeTile(new Tile(4,7,'T'));
+        assertEquals(18, boardState.getScoreForPlay());
         HashMap<Integer, String> horizontalWords = boardState.getHorizontalWords();
         HashMap<Integer, String> verticalWords = boardState.getVerticalWords();
         assertEquals(1, horizontalWords.size());
-        assertEquals("ABC",horizontalWords.get(7 * 15 + 7));
+        assertEquals("TEST",horizontalWords.get(7 * 15 + 7));
         assertEquals(1, verticalWords.size());
-        assertEquals("DCBAA",verticalWords.get(4 * 15 + 7));
+        assertEquals("TESTS",verticalWords.get(4 * 15 + 7));
 
 
-        horizontalWords.put(5*15 + 6, "LCD");
-        verticalWords.put(4*15 + 7, "TEST");
+        horizontalWords.put(5*15 + 6, "LED");
         boardState.setHorizontalWords(horizontalWords); // Coverage
         boardState.setVerticalWords(verticalWords); // Coverage
 
         boardState.placeTile(new Tile(5,6,'L'));
         boardState.placeTile(new Tile(5,8,'D'));
 
-        assertEquals(16, boardState.getScoreForPlay());
+        assertEquals(0, boardState.getScoreForPlay());
         assertEquals('L', boardState.getViewData()[5][6]);
     }
 }

@@ -293,7 +293,6 @@ public class BoardState {
             row++;
         }
         score *= wordMultiplier;
-        //System.out.println("Found word:" + word + " Score: " + score);
         if(!validateVerticalWord(rootRow, rootColumn, word))
         {
             score = 0;
@@ -344,4 +343,20 @@ public class BoardState {
         result = 31 * result + Arrays.deepHashCode(board);
         return result;
     }
+
+    public String toString()
+    {
+        String out = "";
+        char[][] data = getViewData();
+        for(int i = 0; i < 15; i++)
+        {
+            for(int j = 0; j < 15; j++)
+            {
+                out += "[" + data[i][j] + "]";
+            }
+            out += "\n";
+        }
+        return out;
+    }
+
 }

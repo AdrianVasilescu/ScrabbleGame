@@ -25,9 +25,6 @@ public class BoardServerModelTest {
     public void testHandleTiles() throws InitialWordNotOnCenterException, InvalidMoveException {
         assertThrows(InitialWordNotOnCenterException.class,
                 () -> boardServerModel.handleTiles(Arrays.asList(new Tile(1, 1, 'A'))));
-        assertThrows(InvalidMoveException.class,
-                () -> boardServerModel.handleTiles(Arrays.asList(new Tile(7, 7, 'A'),
-                        new Tile(7, 7, 'A'))));
         boardServerModel.handleTiles(Arrays.asList(new Tile(7, 7, 'A'),
                 new Tile(7, 8, 'D'),
                 new Tile(7, 6, 'D')));

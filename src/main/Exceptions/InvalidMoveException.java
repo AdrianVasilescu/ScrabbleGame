@@ -10,7 +10,4 @@ public class InvalidMoveException extends GameException {
     {
         super(error);
     }
-    public InvalidMoveException(Protocol.Error error, boolean returnTiles) {
-        super(error, returnTiles);
-    }
 }

@@ -9,7 +9,9 @@ import main.Exceptions.InvalidInputException;
 import main.Exceptions.InvalidMoveException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public final class GameSpecifics {
@@ -102,7 +104,7 @@ public final class GameSpecifics {
                 return 12;
             case "N":
                 return 13;
-            case "0":
+            case "O":
                 return 14;
             default:
                 throw new InvalidInputException(Protocol.Error.E004);
@@ -213,28 +215,22 @@ public final class GameSpecifics {
         return ret;
     }
 
-    private static String buildAnnounce(String name)
-    {
-        return Protocol.BasicCommand.ANNOUNCE.toString() + Protocol.UNIT_SEPARATOR + name + Protocol.MESSAGE_SEPARATOR;
-    }
-
     public static int decodeRequestGame(String[] parts) throws InvalidInputException, InvalidMoveException {
-        int numP = -1;
-        if(Protocol.BasicCommand.REQUESTGAME.name().equals(parts[0]))
-        {
-            if(parts.length >= 2)
-            {
-                try {
-                    numP = Integer.parseInt(parts[1]);
+        int numP;
+
+        if(parts.length > 0) {
+            if (Protocol.BasicCommand.REQUESTGAME.name().equals(parts[0])) {
+                if (parts.length >= 2) {
+                    try {
+                        numP = Integer.parseInt(parts[1]);
+                    } catch (NumberFormatException e) {
+                        throw new InvalidInputException(Protocol.Error.E003);
+                    }
+                    if(numP < 2 || numP > 4)
+                        throw new InvalidInputException(Protocol.Error.E003);
+                } else {
+                    numP = 2;
                 }
-                catch (NumberFormatException e)
-                {
-                    throw new InvalidInputException(Protocol.Error.E003);
-                }
-            }
-            else if(parts.length == 1)
-            {
-                numP = 2;
             }
             else
             {
@@ -261,8 +257,7 @@ public final class GameSpecifics {
 
     public static boolean anyPossibleMoves(BoardState boardState, List<Character> availableTiles)
     {
-        boolean possible = false;
-
+        Map<BoardState, List<Character>> nextPossibleStates = new HashMap<>();
         for(int i = 0; i < 15; i++)
         {
             for(int j = 0; j < 15; j++)
@@ -278,63 +273,52 @@ public final class GameSpecifics {
                         {
                             for(char cc : "abcdefghijklmnopqrstuvwxyz".toCharArray())
                             {
-                                if (canLeadToSolution(boardState, newAvailableTiles, i, j, cc))
+                                BoardState clone = boardState.cloneState();
+                                if (canLeadToSolution(clone, i, j, cc))
                                 {
-                                    System.out.print("-> Placed " + cc + "on [" + i + "][" + j +"] ->");
+                                    System.out.println("Possible play:\n" + clone);
                                     return true;
                                 }
+                                nextPossibleStates.put(clone, newAvailableTiles);
                             }
                         }
                         else
                         {
-                            if (canLeadToSolution(boardState, newAvailableTiles, i, j, c))
+                            BoardState clone = boardState.cloneState();
+                            if (canLeadToSolution(clone, i, j, c))
                             {
-                                System.out.print("-> Placed " + c + "on [" + i + "][" + j + "] ->");
+                                System.out.println("Possible play:\n" + clone);
                                 return true;
                             }
+                            nextPossibleStates.put(clone, newAvailableTiles);
                         }
                     }
                 }
             }
         }
-        System.out.println("No more possible moves");
+        for(Map.Entry<BoardState, List<Character>> e : nextPossibleStates.entrySet())
+        {
+            if(anyPossibleMoves(e.getKey(), e.getValue()))
+                return true;
+        }
         return false;
     }
 
-    private static boolean canLeadToSolution(BoardState boardState, List<Character> availableTiles, int i, int j, char c) {
-        boolean possible;
-        BoardState clone = boardState.cloneState();
-
+    private static boolean canLeadToSolution(BoardState boardState, int i, int j, char c)
+    {
         try {
-            clone.placeTile(new Tile(i, j, c));
+            boardState.placeTile(new Tile(i, j, c));
 
-            int score = clone.getScoreForPlay();
+            int score = boardState.getScoreForPlay();
             if(score > 0)
                 return true;
-            possible = anyPossibleMoves(clone, availableTiles);
-            if(possible)
-                return true;
         } catch (InvalidMoveException e) {
-            // EXCEPTION MEANS WORDS ARE NOT VALID
-            //System.out.println(".");
+            // MEANS WORDS ARE NOT VALID
+            boardState.setHorizontalWords(new HashMap<>());
+            boardState.setVerticalWords(new HashMap<>());
             return false;
         }
         return false;
-    }
-
-    public static String extractTilesFromCommand(String command)
-    {
-        String[] parts = command.split(String.valueOf(Protocol.UNIT_SEPARATOR));
-        if("WORD".equals(parts[1]))
-        {
-            return parts[4];
-        }
-        else if("SWAP".equals(parts[1]))
-        {
-            return parts[2];
-        }
-
-        return "";
     }
 
     public static boolean isNumeric(String strNum) {

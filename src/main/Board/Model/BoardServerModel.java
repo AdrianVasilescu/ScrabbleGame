@@ -58,17 +58,17 @@ public class BoardServerModel {
             }
             catch (InvalidMoveException e)
             {
-                throw new InvalidMoveException(e.getError(), true);
+                throw new InvalidMoveException(e.getError());
             }
         }
 
         if(!centerOccupied && !occupiesCenter)
         {
-            throw new InitialWordNotOnCenterException(true);
+            throw new InitialWordNotOnCenterException();
         }
         else if(!neighboured && !occupiesCenter)
         {
-            throw new InvalidMoveException(Protocol.Error.E005, true);
+            throw new InvalidMoveException(Protocol.Error.E005);
         }
 
         try
@@ -77,7 +77,7 @@ public class BoardServerModel {
         }
         catch (InvalidMoveException e)
         {
-            throw new InvalidMoveException(e.getError(), true);
+            throw new InvalidMoveException(e.getError());
         }
         this.board = tempBoard;
 
