@@ -8,6 +8,9 @@ import java.util.concurrent.Semaphore;
 
 import static main.Game.GameSpecifics.EMPTY_SLOT;
 
+/**
+ * Very basic UI
+ */
 public class PlayerInteractor {
     private final JTextField playerInput = new JTextField(20);
     private final JTextArea serverMessages = new JTextArea(10, 20);
@@ -21,6 +24,9 @@ public class PlayerInteractor {
     private final Semaphore inputSem;
     private final Thread guiThread;
 
+    /**
+     * Creates a player interactor
+     */
     public PlayerInteractor()
     {
         inputSem = new Semaphore(0);
@@ -28,6 +34,10 @@ public class PlayerInteractor {
         guiThread.start();
     }
 
+    /**
+     * Updates the board output
+     * @param board the board data
+     */
     public void updateBoard(char[][] board)
     {
         for(int i = 0; i < 15; i++)
@@ -42,11 +52,20 @@ public class PlayerInteractor {
         }
     }
 
+    /**
+     * Updates the available tiles
+     * @param tiles the tiles
+     */
     public void updateTiles(String tiles)
     {
         this.availableTiles.setText("AVAILABLE TILES:\n" + tiles);
     }
 
+    /**
+     * Unlock the input for the player
+     * @return the input
+     * @throws InterruptedException
+     */
     public String getInput() throws InterruptedException {
         String ret;
         playerInput.setEditable(true);
@@ -57,6 +76,9 @@ public class PlayerInteractor {
         return ret;
     }
 
+    /**
+     * Init the gui
+     */
     public void initGui()
     {
         gui.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -104,12 +126,18 @@ public class PlayerInteractor {
         frame.setVisible(true);
     }
 
+    /**
+     * Close the gui
+     */
     public void closeGui()
     {
         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         guiThread.interrupt();
     }
 
+    /**
+     * Init the player input section
+     */
     private void initPlayerInput() {
         playerInput.addKeyListener(new KeyListener() {
             @Override
@@ -154,6 +182,9 @@ public class PlayerInteractor {
         });
     }
 
+    /**
+     * Init the board section
+     */
     private void initBoard() {
         for(int i = 0; i < 16; i ++)
         {
@@ -196,6 +227,11 @@ public class PlayerInteractor {
         }
     }
 
+    /**
+     * Populate a label from the board
+     * @param label the label
+     * @param c the letter
+     */
     private void populateLabel(JLabel label, String c) {
         if(c.isEmpty())
         {
@@ -208,6 +244,10 @@ public class PlayerInteractor {
         label.setText(c);
     }
 
+    /**
+     * prints a message to the message output area
+     * @param s the message
+     */
     public void printMessage(String s) {
         serverMessages.append(">" + s + "\n");
     }

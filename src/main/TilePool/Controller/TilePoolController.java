@@ -1,11 +1,8 @@
 package main.TilePool.Controller;
 
-import main.Common.Tile;
 import main.Exceptions.NotEnoughTilesException;
-import main.TilePool.View.TilePoolView;
 import main.TilePool.Model.TilePoolModel;
-
-import java.util.List;
+import main.TilePool.View.TilePoolView;
 
 /**
  * The tile pool controller
@@ -14,12 +11,12 @@ public class TilePoolController {
     /**
      * The tile pool model
      */
-    private TilePoolModel tilePoolModel;
+    private final TilePoolModel tilePoolModel;
 
     /**
      * The tile pool view
      */
-    private TilePoolView tilePoolView;
+    private final TilePoolView tilePoolView;
 
     /**
      * Instantiates a new tile pool controller
@@ -60,6 +57,10 @@ public class TilePoolController {
      tilePoolView.printTilePool();
     }
 
+    /**
+     * Checks if the tile pool is empty
+     * @return whether the tile pool is empty
+     */
     public boolean isEmpty() {
         return this.tilePoolModel.isEmpty();
     }

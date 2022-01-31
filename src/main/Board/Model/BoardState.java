@@ -1,9 +1,9 @@
 package main.Board.Model;
 
 import lib.Protocol;
-import main.Game.GameSpecifics;
 import main.Common.Tile;
 import main.Exceptions.InvalidMoveException;
+import main.Game.GameSpecifics;
 
 import java.util.*;
 
@@ -133,6 +133,11 @@ public class BoardState {
         return clone;
     }
 
+    /**
+     * Computes the score for the last played words
+     * @return the score
+     * @throws InvalidMoveException in case any words are not valid words
+     */
     public int getScoreForPlay() throws InvalidMoveException {
         boolean[][] visited = new boolean[15][15];
 

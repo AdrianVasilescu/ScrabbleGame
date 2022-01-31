@@ -3,7 +3,6 @@ package main.Player.Controller;
 import main.Common.PlayerInteractor;
 import main.Common.Tile;
 import main.Player.Model.PlayerModel;
-import main.Player.View.PlayerView;
 
 import java.util.List;
 
@@ -18,10 +17,8 @@ public class PlayerController {
     private PlayerModel playerModel;
 
     /**
-     * Current java.Player view
+     * The player UI
      */
-    private PlayerView playerView;
-
     private PlayerInteractor playerInteractor;
 
     /**
@@ -30,7 +27,6 @@ public class PlayerController {
      */
     public PlayerController(PlayerInteractor playerInteractor)
     {
-        this.playerView = new PlayerView();
         this.playerModel = new PlayerModel();
         this.playerInteractor = playerInteractor;
     }
@@ -59,14 +55,21 @@ public class PlayerController {
      */
     private void mapModelDataToViewData()
     {
-        playerView.updateView(playerModel.getPlayerId(), playerModel.getTileStackViewData());
         playerInteractor.updateTiles(playerModel.getTileStackViewData());
     }
 
+    /**
+     * Prints a message
+     * @param s the message
+     */
     public void printMessage(String s) {
         playerInteractor.printMessage(s);
     }
 
+    /**
+     * Prints a message prompted as from the server
+     * @param s the message
+     */
     public void printMessageFromServer(String s) {
         printMessage("SERVER:" + s);
     }

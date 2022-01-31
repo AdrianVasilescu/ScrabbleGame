@@ -12,18 +12,34 @@ import java.util.concurrent.Semaphore;
 import static main.Game.GameSpecifics.decodeRequestGame;
 import static main.Game.GameSpecifics.encodeMessage;
 
+/**
+ * The server runnable
+ */
 public class Server implements Runnable{
-    private Map<String, PlayerSession> sessions;
-    private Map<Integer, List<String>> gameQueues;
-
-    private final Semaphore stopGame;
+    /**
+     * All the active named player sessions
+     */
+    private final Map<String, PlayerSession> sessions;
+    /**
+     * All the game queues with incomplete games
+     */
+    private final Map<Integer, List<String>> gameQueues;
+    /**
+     * Semaphore used to sync game requests with queue supervising
+     */
     private final Semaphore gameRequest;
-
+    /**
+     * The socket on which this server listens for connections
+     */
     private ServerSocket socket;
-    private int port;
-    private Thread connectionsThread;
-    private Thread gameQueuesHandlerThread;
-    private List<Thread> games;
+    /**
+     * The port on which this server will open
+     */
+    private final int port;
+    /**
+     * A list of all the active games
+     */
+    private final List<Thread> games;
 
     /**
      * Instantiates a new server
@@ -32,7 +48,6 @@ public class Server implements Runnable{
     {
         this.sessions = Collections.synchronizedMap(new HashMap<>());
         this.gameQueues = Collections.synchronizedMap(new HashMap<>());
-        this.stopGame = new Semaphore(0);
         this.gameRequest = new Semaphore(0);
         this.games = new ArrayList<>();
         this.port = port;
@@ -41,8 +56,9 @@ public class Server implements Runnable{
     @Override
     public void run() {
         openServerSocket();
-        connectionsThread = new Thread(() -> listenForConnections());
-        gameQueuesHandlerThread = new Thread(() -> superviseQueues());
+
+        Thread connectionsThread = new Thread(() -> listenForConnections());
+        Thread gameQueuesHandlerThread = new Thread(() -> superviseQueues());
 
         try {
             connectionsThread.start();
@@ -59,6 +75,9 @@ public class Server implements Runnable{
         }
     }
 
+    /**
+     * Opens the server socket
+     */
     private void openServerSocket() {
         System.out.println("Server starting...");
         try {
@@ -69,15 +88,18 @@ public class Server implements Runnable{
         System.out.println("...server accepting connections!");
     }
 
+    /**
+     * Actively listens for connections
+     */
     private void listenForConnections()
     {
         while(true)
         {
             try {
                 Socket s = socket.accept();
-                PlayerConnector playerConnector = new PlayerConnector(s);
+                SocketConnector socketConnector = new SocketConnector(s);
                 System.out.println("New Connection!");
-                PlayerSession session = new PlayerSession(playerConnector);
+                PlayerSession session = new PlayerSession(socketConnector);
                 putPlayerInLobby(session);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -85,6 +107,10 @@ public class Server implements Runnable{
         }
     }
 
+    /**
+     * Puts the player back in the state where he needs to request a new game
+     * @param session the player session
+     */
     private void putPlayerInLobby(PlayerSession session) {
         Thread thread = new Thread(() -> {
             try {
@@ -96,6 +122,9 @@ public class Server implements Runnable{
         thread.start();
     }
 
+    /**
+     * Supervises all game queues and decides when a game can be started
+     */
     private void superviseQueues() {
         while(true)
         {
@@ -132,6 +161,11 @@ public class Server implements Runnable{
         }
     }
 
+    /**
+     * Handles a new player session until it announces and requests a game
+     * @param serverSession the session
+     * @throws IOException
+     */
     private void handlePlayerSession(PlayerSession serverSession) throws IOException {
         boolean playerNamed = !serverSession.getName().isEmpty();
         boolean requestedGame = false;
@@ -175,6 +209,11 @@ public class Server implements Runnable{
         }
     }
 
+    /**
+     * Checks if a player name is already taken
+     * @param name the name
+     * @throws InvalidInputException
+     */
     private void checkName(String name) throws InvalidInputException {
         if(sessions.containsKey(name))
         {
@@ -182,12 +221,19 @@ public class Server implements Runnable{
         }
     }
 
-    private String decodeAnnounce(String[] command) throws InvalidMoveException, InvalidInputException {
-        if(command.length != 2 ||
-                !command[0].equals(Protocol.BasicCommand.ANNOUNCE.name()))
+    /**
+     * Tries to decode an announce message
+     * @param message the message
+     * @return the name of the announced player
+     * @throws InvalidMoveException
+     * @throws InvalidInputException
+     */
+    private String decodeAnnounce(String[] message) throws InvalidMoveException, InvalidInputException {
+        if(message.length != 2 ||
+                !message[0].equals(Protocol.BasicCommand.ANNOUNCE.name()))
         {
             throw new InvalidMoveException(Protocol.Error.E002);
         }
-        return command[1];
+        return message[1];
     }
 }

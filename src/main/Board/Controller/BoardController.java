@@ -1,9 +1,9 @@
 package main.Board.Controller;
 
 import lib.Protocol;
+import main.Board.Model.BoardServerModel;
 import main.Board.Model.BoardState;
 import main.Board.View.BoardView;
-import main.Board.Model.BoardServerModel;
 import main.Common.Tile;
 import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidInputException;
@@ -85,6 +85,10 @@ public class BoardController {
         boardView.updateView(boardViewData);
     }
 
+    /**
+     * Produces a snapshot of the current board state
+     * @return the snapshot
+     */
     public BoardState getBoardStateSnapshot() {
         return boardServerModel.getBoardStateSnapshot();
     }

@@ -14,12 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Game utility class
+ */
 public final class GameSpecifics {
     /**
      * Empty slot on board
      */
     public static final char EMPTY_SLOT = '-';
-
+    /**
+     * The local command input parts delimiter
+     */
+    public static final char LOCAL_DELIMITER = '-';
     /**
      * The pattern to identify a number
      */
@@ -63,9 +69,20 @@ public final class GameSpecifics {
             {'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L'},
             {'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W', 'L', 'L', 'L', 'L', 'L', 'L', 'W'}};
 
+    /**
+     * The word checker
+     */
     private static final ScrabbleWordChecker CHECKER = new InMemoryScrabbleWordChecker();
-    private GameSpecifics(){}
 
+    private GameSpecifics(){
+        // This is an utility class -> private constructor
+    }
+
+    /**
+     * Checks if a word is valid
+     * @param word the word
+     * @return whether it is valid or not
+     */
     public static boolean checkWord(String word)
     {
         ScrabbleWordChecker.WordResponse wordResponse = CHECKER.isValidWord(word);
@@ -73,6 +90,12 @@ public final class GameSpecifics {
         return wordResponse != null;
     }
 
+    /**
+     * Gets the column associated with a letter from the view
+     * @param character the character
+     * @return the column
+     * @throws InvalidInputException whether the column specified is out of bounds
+     */
     public static int getCol(String character) throws InvalidInputException {
         switch (character)
         {
@@ -111,6 +134,11 @@ public final class GameSpecifics {
         }
     }
 
+    /**
+     * Gets the hardcoded given score of any character
+     * @param c the character
+     * @return the score
+     */
     public static int getScoreOfCharacter(char c) {
         switch (c)
         {
@@ -156,11 +184,11 @@ public final class GameSpecifics {
 
     /**
      * Extracts the list of placed tiles from the command
-     * @param start
-     * @param align
-     * @param word
-     * @param board
-     * @return the list of tiles
+     * @param start the start position
+     * @param align H(orizontal)/V(ertical)
+     * @param word the word
+     * @param board the current board state (needed to know which letters of the word are new)
+     * @return the list of tiles played
      */
     public static List<Tile> extractTiles(String start, String align, String word, char[][] board)
             throws InvalidInputException {
@@ -204,17 +232,29 @@ public final class GameSpecifics {
         return ret;
     }
 
-    public static List<Tile> extractInlineTiles(String s)
+    /**
+     * Extracts the tiles for an inline word
+     * @param word the word
+     * @return a list of tiles
+     */
+    public static List<Tile> extractInlineTiles(String word)
     {
         List<Tile> ret = new ArrayList<>();
 
-        for (char c : s.toCharArray()) {
+        for (char c : word.toCharArray()) {
             ret.add(new Tile(c));
         }
 
         return ret;
     }
 
+    /**
+     * Tries to decode a REQUESTGAME message
+     * @param parts the command sections
+     * @return the number of players requested for the game
+     * @throws InvalidInputException in case something is wrong about the input
+     * @throws InvalidMoveException in case something is wrong about the command
+     */
     public static int decodeRequestGame(String[] parts) throws InvalidInputException, InvalidMoveException {
         int numP;
 
@@ -244,6 +284,12 @@ public final class GameSpecifics {
         return numP;
     }
 
+    /**
+     * Encodes a message according to the protocol
+     * @param name the command name
+     * @param parameters the command parameters
+     * @return the encoded command
+     */
     public static String encodeMessage(String name, String... parameters)
     {
         String cmd = name;
@@ -255,15 +301,23 @@ public final class GameSpecifics {
         return cmd;
     }
 
+    /**
+     * Checks if on the current board and with the available tiles there are any possible moves left
+     * @param boardState the board state
+     * @param availableTiles the available tiles
+     * @return
+     */
     public static boolean anyPossibleMoves(BoardState boardState, List<Character> availableTiles)
     {
         Map<BoardState, List<Character>> nextPossibleStates = new HashMap<>();
+        // First try to place each tile on each available positions
         for(int i = 0; i < 15; i++)
         {
             for(int j = 0; j < 15; j++)
             {
                 if(!boardState.isPositionOccupied(i, j) && boardState.isPositionNeighboured(i, j))
                 {
+                    // Each combination of an available tile and an empty spot generates a possible future state
                     for(char c : availableTiles)
                     {
                         List<Character> newAvailableTiles = new ArrayList<>(availableTiles);
@@ -296,6 +350,7 @@ public final class GameSpecifics {
                 }
             }
         }
+        // Than iteratively do the same for all the remaining tiles for all the possible generated states
         for(Map.Entry<BoardState, List<Character>> e : nextPossibleStates.entrySet())
         {
             if(anyPossibleMoves(e.getKey(), e.getValue()))
@@ -304,6 +359,14 @@ public final class GameSpecifics {
         return false;
     }
 
+    /**
+     * Checks if a specific move leads to a final solution
+     * @param boardState the board state
+     * @param i the row
+     * @param j the column
+     * @param c the letter to place
+     * @return whether a solution was found
+     */
     private static boolean canLeadToSolution(BoardState boardState, int i, int j, char c)
     {
         try {
@@ -321,6 +384,11 @@ public final class GameSpecifics {
         return false;
     }
 
+    /**
+     * Checks whether a string is numerical
+     * @param strNum the string
+     * @return whether it is numerical
+     */
     public static boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;

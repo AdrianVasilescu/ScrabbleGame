@@ -5,7 +5,7 @@ import main.Common.Tile;
 import main.Exceptions.InitialWordNotOnCenterException;
 import main.Exceptions.InvalidMoveException;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * The java.Board Model - handles board business logic
@@ -84,6 +84,10 @@ public class BoardServerModel {
         return ret;
     }
 
+    /**
+     * Gets a snapshot of the board
+     * @return the snapshot
+     */
     public BoardState getBoardStateSnapshot() {
         return this.board.cloneState();
     }

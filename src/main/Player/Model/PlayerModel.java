@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The java.Player Model - handles player side business
+ * The Player Model - handles player side business
  */
 public class PlayerModel {
     /**
@@ -73,6 +73,10 @@ public class PlayerModel {
         return viewData + "]";
     }
 
+    /**
+     * Remove the concerned tiles
+     * @param concernedTiles
+     */
     public void removeTiles(List<Tile> concernedTiles) {
         for(Tile t : concernedTiles)
         {

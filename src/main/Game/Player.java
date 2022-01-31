@@ -15,20 +15,52 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import static java.lang.Thread.sleep;
 import static main.Game.GameSpecifics.*;
 
+/**
+ * The client side runnable
+ */
+
 public class Player implements Runnable{
-    private static final char LOCAL_DELIMITER = '-';
-    private TilePoolView tilePool;
-    private PlayerController playerController;
-    private BoardView board;
-    private PlayerConnector gameConnector;
-    private PlayerInteractor playerInteractor;
+    /**
+     * The player controller
+     */
+    private final PlayerController playerController;
+
+    /**
+     * Board view to be transmitted to the UI
+     */
+    private final BoardView board;
+    /**
+     * The connector to the game server
+     */
+    private SocketConnector gameConnector;
+    /**
+     * The player UI
+     */
+    private final PlayerInteractor playerInteractor;
+    /**
+     * The player name
+     */
     private String name;
+    /**
+     * A flag set as soon as the player connects to server
+     * and disabled as soon as the connection is interrupted
+     */
     private volatile boolean connected = false;
+    /**
+     * A flag set once this player takes part in an
+     * ongoing game and disable when game ends
+     */
     private volatile boolean gameOn = false;
+    /**
+     * Semaphore used to block main player main thread after game is started,
+     * until it is finished
+     */
     private final Semaphore stopGame;
+    /**
+     * Semaphore used to block player input thread until it is it's turn
+     */
     private final Semaphore playerSem;
     private Thread playerInputThread;
     private Thread serverConnecitonThread;
@@ -38,7 +70,6 @@ public class Player implements Runnable{
      */
     public Player()
     {
-        this.tilePool = new TilePoolView();
         this.board = new BoardView();
         this.playerInteractor = new PlayerInteractor();
         this.playerController = new PlayerController(playerInteractor);
@@ -47,16 +78,24 @@ public class Player implements Runnable{
         this.playerSem = new Semaphore(0);
     }
 
+    /**
+     * Opens the connection to the game server
+     * @param address the address
+     * @param port the port
+     */
     public void openConnection(String address, int port)
     {
         try {
             Socket s = new Socket(address, port);
-            this.gameConnector = new PlayerConnector(s);
+            this.gameConnector = new SocketConnector(s);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Populates initial board
+     */
     private void populateInitialBoardView() {
         char[][] initialBoard = new char[15][15];
         for(int i = 0; i < 15; i++)
@@ -84,6 +123,10 @@ public class Player implements Runnable{
         }
     }
 
+    /**
+     * The method that handles initialising and ending a game
+     * @return the thread on which this method will run
+     */
     private Thread playGame() {
         Thread gameThread = new Thread(() -> {
             while(connected)  {
@@ -109,6 +152,11 @@ public class Player implements Runnable{
         return gameThread;
     }
 
+    /**
+     * Handles connecting and announcing oneself
+     * @throws InterruptedException
+     * @throws IOException
+     */
     private void connectToGame() throws InterruptedException, IOException {
         while(!connected)
         {
@@ -132,6 +180,11 @@ public class Player implements Runnable{
         }
     }
 
+    /**
+     * Handles requesting a game
+     * @throws InterruptedException
+     * @throws IOException
+     */
     private void requestGame() throws InterruptedException, IOException {
         while(!gameOn)
         {
@@ -152,6 +205,9 @@ public class Player implements Runnable{
         }
     }
 
+    /**
+     * Listen to input from the player
+     */
     private void listenToPlayer() {
         try {
             while (gameOn) {
@@ -168,11 +224,19 @@ public class Player implements Runnable{
         System.out.println("Player connection closed.");
     }
 
+    /**
+     * Encodes command typed by the player to  protocol standard
+     * @param command
+     * @return
+     */
     private String prepareLocalCommand(String command) {
         return command
                 .replace(LOCAL_DELIMITER, Protocol.UNIT_SEPARATOR).trim() + Protocol.MESSAGE_SEPARATOR;
     }
 
+    /**
+     * Listens to messages incoming from the server
+     */
     private void listenToServer()
     {
         while(connected)
@@ -195,6 +259,14 @@ public class Player implements Runnable{
         System.out.println("Server connection closed.");
     }
 
+    /**
+     * Does an action based on the command arrived in a message from the server
+     * @param message the message
+     * @throws InvalidInputException
+     * @throws InitialWordNotOnCenterException
+     * @throws InvalidMoveException
+     * @throws NotEnoughTilesException
+     */
     private void doAction(String message)
             throws InvalidInputException, InitialWordNotOnCenterException,
             InvalidMoveException, NotEnoughTilesException {
@@ -339,6 +411,11 @@ public class Player implements Runnable{
             playerController.printMessage(msg);
     }
 
+    /**
+     * Builds the player name announcement message
+     * @param name
+     * @return
+     */
     private String buildAnnounce(String name)
     {
         return Protocol.BasicCommand.ANNOUNCE.toString() + Protocol.UNIT_SEPARATOR + name + Protocol.MESSAGE_SEPARATOR;

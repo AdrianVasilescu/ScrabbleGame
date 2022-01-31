@@ -12,16 +12,47 @@ import java.util.concurrent.Semaphore;
 
 import static main.Game.GameSpecifics.*;
 
+/**
+ * Game session
+ */
 public class GameSession implements Runnable{
+    /**
+     * The board controller
+     */
     private BoardController boardController;
+    /**
+     * The tile pool controller
+     */
     private TilePoolController tilePoolController;
+    /**
+     * The list of players
+     */
     private List<PlayerSession> players;
+    /**
+     * Semaphore to control turn ends (assessing whether the game is over or not)
+     */
     private Semaphore turnEnd;
+    /**
+     * The current player count
+     */
     private int currentPlayer;
+    /**
+     * Flag that is enabled when the game is started and disabled when it ends
+     */
     private volatile boolean gameOn;
+    /**
+     * Used as a lock for synchronized checking / updating the current player
+     */
     private final Object turn;
+    /**
+     * Flag that is enabled when one of the player disconnects
+     */
     private volatile boolean disconnect = false;
 
+    /**
+     * Creates a new game session
+     * @param players the list of player sessions registered for this game
+     */
     public GameSession(List<PlayerSession> players) {
         this.players = players;
         this.boardController = new BoardController();
@@ -69,7 +100,7 @@ public class GameSession implements Runnable{
                 turnEnd.acquire();
             } while (gameOnGoing());
 
-            broadcast(buildGameover());
+            broadcast(buildGameOver());
         } catch (IOException | InterruptedException e) {
             System.out.println("Error running the game:" + e.getMessage());
         }
@@ -80,7 +111,11 @@ public class GameSession implements Runnable{
         }
     }
 
-    private String buildGameover() {
+    /**
+     * Collects the data and builds the game over message
+     * @return the game over message
+     */
+    private String buildGameOver() {
         String scores = "";
         String result = "WIN";
 
@@ -101,6 +136,10 @@ public class GameSession implements Runnable{
                 result + scores);
     }
 
+    /**
+     * Checks whether the game state is not a final one (WIN/DISCONNECT)
+     * @return whether the game is ongoing
+     */
     private boolean gameOnGoing() {
         if(disconnect)
         {
@@ -121,6 +160,12 @@ public class GameSession implements Runnable{
         return false;
     }
 
+    /**
+     * Listens to the input from a player
+     * @param s the player session
+     * @param id the in-game player id
+     * @throws IOException in case the connection with the player interrupts
+     */
     private void listen(PlayerSession s, int id) throws IOException {
         String message = "";
         while(gameOn)
@@ -154,6 +199,10 @@ public class GameSession implements Runnable{
         }
     }
 
+    /**
+     * Turn is passed to the next player and announced
+     * @throws IOException in case there is a disconnection while sending the notifyturn message
+     */
     private void passTurn() throws IOException {
         currentPlayer = (currentPlayer + 1) % players.size();
         String playerName = players.get(currentPlayer).getName();
@@ -171,6 +220,11 @@ public class GameSession implements Runnable{
         turnEnd.release();
     }
 
+    /**
+     * Broadcasts a message to all the players
+     * @param message the message
+     * @throws IOException in case any connection interrupts while sending the message
+     */
     private void broadcast(String message) throws IOException
     {
         for(PlayerSession s : players)
@@ -182,6 +236,17 @@ public class GameSession implements Runnable{
         }
     }
 
+    /**
+     * Does the specific action based on the input of a player
+     * @param message the player input
+     * @param s the player
+     * @return the score of the action
+     * @throws InvalidInputException
+     * @throws InitialWordNotOnCenterException
+     * @throws InvalidMoveException
+     * @throws NotEnoughTilesException
+     * @throws IOException
+     */
     private int doAction(String message, PlayerSession s)
             throws InvalidInputException, InitialWordNotOnCenterException, InvalidMoveException, NotEnoughTilesException, IOException {
         if(message == null)
