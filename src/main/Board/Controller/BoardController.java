@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * The java.Board Controller - handles interactions
  */
-public class BoardController {
+public class    BoardController {
     /**
      * The board model
      */
