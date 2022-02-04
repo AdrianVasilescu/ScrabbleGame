@@ -1,0 +1,407 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > GameSession</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/highlight-idea.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">main.Game</a>
+</div>
+
+<h1>Coverage Summary for Class: GameSession (main.Game)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GameSession</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    82.8%
+  </span>
+  <span class="absValue">
+    (106/128)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package main.Game;
+<i class="no-highlight">2</i>&nbsp;
+<i class="no-highlight">3</i>&nbsp;import lib.Protocol;
+<i class="no-highlight">4</i>&nbsp;import main.Board.Controller.BoardController;
+<i class="no-highlight">5</i>&nbsp;import main.Common.Tile;
+<i class="no-highlight">6</i>&nbsp;import main.Exceptions.*;
+<i class="no-highlight">7</i>&nbsp;import main.TilePool.Controller.TilePoolController;
+<i class="no-highlight">8</i>&nbsp;
+<i class="no-highlight">9</i>&nbsp;import java.io.IOException;
+<i class="no-highlight">10</i>&nbsp;import java.util.List;
+<i class="no-highlight">11</i>&nbsp;import java.util.concurrent.Semaphore;
+<i class="no-highlight">12</i>&nbsp;
+<i class="no-highlight">13</i>&nbsp;import static main.Game.GameSpecifics.*;
+<i class="no-highlight">14</i>&nbsp;
+<i class="no-highlight">15</i>&nbsp;/**
+<i class="no-highlight">16</i>&nbsp; * Game session
+<i class="no-highlight">17</i>&nbsp; */
+<i class="no-highlight">18</i>&nbsp;public class GameSession implements Runnable{
+<i class="no-highlight">19</i>&nbsp;    /**
+<i class="no-highlight">20</i>&nbsp;     * The board controller
+<i class="no-highlight">21</i>&nbsp;     */
+<i class="no-highlight">22</i>&nbsp;    private BoardController boardController;
+<i class="no-highlight">23</i>&nbsp;    /**
+<i class="no-highlight">24</i>&nbsp;     * The tile pool controller
+<i class="no-highlight">25</i>&nbsp;     */
+<i class="no-highlight">26</i>&nbsp;    private TilePoolController tilePoolController;
+<i class="no-highlight">27</i>&nbsp;    /**
+<i class="no-highlight">28</i>&nbsp;     * The list of players
+<i class="no-highlight">29</i>&nbsp;     */
+<i class="no-highlight">30</i>&nbsp;    private List&lt;PlayerSession&gt; players;
+<i class="no-highlight">31</i>&nbsp;    /**
+<i class="no-highlight">32</i>&nbsp;     * Semaphore to control turn ends (assessing whether the game is over or not)
+<i class="no-highlight">33</i>&nbsp;     */
+<i class="no-highlight">34</i>&nbsp;    private Semaphore turnEnd;
+<i class="no-highlight">35</i>&nbsp;    /**
+<i class="no-highlight">36</i>&nbsp;     * The current player count
+<i class="no-highlight">37</i>&nbsp;     */
+<i class="no-highlight">38</i>&nbsp;    private int currentPlayer;
+<i class="no-highlight">39</i>&nbsp;    /**
+<i class="no-highlight">40</i>&nbsp;     * Flag that is enabled when the game is started and disabled when it ends
+<i class="no-highlight">41</i>&nbsp;     */
+<i class="no-highlight">42</i>&nbsp;    private volatile boolean gameOn;
+<i class="no-highlight">43</i>&nbsp;    /**
+<i class="no-highlight">44</i>&nbsp;     * Used as a lock for synchronized checking / updating the current player
+<i class="no-highlight">45</i>&nbsp;     */
+<i class="no-highlight">46</i>&nbsp;    private final Object turn;
+<i class="no-highlight">47</i>&nbsp;    /**
+<i class="no-highlight">48</i>&nbsp;     * Flag that is enabled when one of the player disconnects
+<i class="no-highlight">49</i>&nbsp;     */
+<b class="fc"><i class="no-highlight">50</i>&nbsp;    private volatile boolean disconnect = false;</b>
+<i class="no-highlight">51</i>&nbsp;
+<i class="no-highlight">52</i>&nbsp;    /**
+<i class="no-highlight">53</i>&nbsp;     * Creates a new game session
+<i class="no-highlight">54</i>&nbsp;     * @param players the list of player sessions registered for this game
+<i class="no-highlight">55</i>&nbsp;     */
+<b class="fc"><i class="no-highlight">56</i>&nbsp;    public GameSession(List&lt;PlayerSession&gt; players) {</b>
+<b class="fc"><i class="no-highlight">57</i>&nbsp;        this.players = players;</b>
+<b class="fc"><i class="no-highlight">58</i>&nbsp;        this.boardController = new BoardController();</b>
+<b class="fc"><i class="no-highlight">59</i>&nbsp;        this.tilePoolController = new TilePoolController();</b>
+<b class="fc"><i class="no-highlight">60</i>&nbsp;        this.turn = new Object();</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;        this.turnEnd = new Semaphore(-1);</b>
+<i class="no-highlight">62</i>&nbsp;    }
+<i class="no-highlight">63</i>&nbsp;
+<i class="no-highlight">64</i>&nbsp;    @Override
+<i class="no-highlight">65</i>&nbsp;    public void run() {
+<i class="no-highlight">66</i>&nbsp;        //START GAME
+<b class="fc"><i class="no-highlight">67</i>&nbsp;        String startGameParams = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">68</i>&nbsp;        currentPlayer = -1;</b>
+<b class="fc"><i class="no-highlight">69</i>&nbsp;        gameOn = true;</b>
+<i class="no-highlight">70</i>&nbsp;
+<i class="no-highlight">71</i>&nbsp;        try {
+<b class="fc"><i class="no-highlight">72</i>&nbsp;            for (int i = 0; i &lt; players.size(); i++) {</b>
+<b class="fc"><i class="no-highlight">73</i>&nbsp;                int id = i;</b>
+<b class="fc"><i class="no-highlight">74</i>&nbsp;                PlayerSession s = players.get(i);</b>
+<b class="fc"><i class="no-highlight">75</i>&nbsp;                Thread t = new Thread(() -&gt; {</b>
+<i class="no-highlight">76</i>&nbsp;                    try {
+<b class="fc"><i class="no-highlight">77</i>&nbsp;                        listen(s, id);</b>
+<b class="nc"><i class="no-highlight">78</i>&nbsp;                    } catch (IOException e) {</b>
+<b class="nc"><i class="no-highlight">79</i>&nbsp;                        System.out.println(&quot;Connection failure on session(&quot; + s.getName() +&quot;): &quot; + e.getMessage());</b>
+<b class="fc"><i class="no-highlight">80</i>&nbsp;                    }</b>
+<i class="no-highlight">81</i>&nbsp;                });
+<b class="fc"><i class="no-highlight">82</i>&nbsp;                s.setPlayerThread(t);</b>
+<b class="fc"><i class="no-highlight">83</i>&nbsp;                startGameParams += Protocol.UNIT_SEPARATOR + players.get(i).getName();</b>
+<b class="fc"><i class="no-highlight">84</i>&nbsp;                t.start();</b>
+<i class="no-highlight">85</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">86</i>&nbsp;            broadcast(encodeMessage(Protocol.BasicCommand.STARTGAME.name(),</b>
+<b class="fc"><i class="no-highlight">87</i>&nbsp;                    startGameParams.substring(1)));</b>
+<b class="fc"><i class="no-highlight">88</i>&nbsp;            for (PlayerSession player : players) {</b>
+<b class="fc"><i class="no-highlight">89</i>&nbsp;                String firstTiles = tilePoolController.getTilesFromPool(7);</b>
+<b class="fc"><i class="no-highlight">90</i>&nbsp;                player.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), firstTiles));</b>
+<b class="fc"><i class="no-highlight">91</i>&nbsp;                player.addTiles(firstTiles);</b>
+<b class="fc"><i class="no-highlight">92</i>&nbsp;            }</b>
+<b class="fc"><i class="no-highlight">93</i>&nbsp;            synchronized (turn) {</b>
+<b class="fc"><i class="no-highlight">94</i>&nbsp;                passTurn();</b>
+<b class="fc"><i class="no-highlight">95</i>&nbsp;            }</b>
+<i class="no-highlight">96</i>&nbsp;            // GAME ONGOING
+<i class="no-highlight">97</i>&nbsp;
+<i class="no-highlight">98</i>&nbsp;            //Check game status
+<i class="no-highlight">99</i>&nbsp;            do {
+<b class="fc"><i class="no-highlight">100</i>&nbsp;                turnEnd.acquire();</b>
+<b class="fc"><i class="no-highlight">101</i>&nbsp;            } while (gameOnGoing());</b>
+<i class="no-highlight">102</i>&nbsp;
+<b class="fc"><i class="no-highlight">103</i>&nbsp;            broadcast(buildGameOver());</b>
+<b class="nc"><i class="no-highlight">104</i>&nbsp;        } catch (IOException | InterruptedException e) {</b>
+<b class="nc"><i class="no-highlight">105</i>&nbsp;            System.out.println(&quot;Error running the game:&quot; + e.getMessage());</b>
+<b class="fc"><i class="no-highlight">106</i>&nbsp;        }</b>
+<i class="no-highlight">107</i>&nbsp;        // END GAME
+<b class="fc"><i class="no-highlight">108</i>&nbsp;        for(PlayerSession s : players)</b>
+<i class="no-highlight">109</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">110</i>&nbsp;            s.endSession();</b>
+<b class="fc"><i class="no-highlight">111</i>&nbsp;        }</b>
+<i class="no-highlight">112</i>&nbsp;    }
+<i class="no-highlight">113</i>&nbsp;
+<i class="no-highlight">114</i>&nbsp;    /**
+<i class="no-highlight">115</i>&nbsp;     * Collects the data and builds the game over message
+<i class="no-highlight">116</i>&nbsp;     * @return the game over message
+<i class="no-highlight">117</i>&nbsp;     */
+<i class="no-highlight">118</i>&nbsp;    private String buildGameOver() {
+<b class="fc"><i class="no-highlight">119</i>&nbsp;        String scores = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">120</i>&nbsp;        String result = &quot;WIN&quot;;</b>
+<i class="no-highlight">121</i>&nbsp;
+<b class="fc"><i class="no-highlight">122</i>&nbsp;        for(PlayerSession p : players)</b>
+<i class="no-highlight">123</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">124</i>&nbsp;            scores +=  Protocol.UNIT_SEPARATOR + p.getName() + Protocol.UNIT_SEPARATOR;</b>
+<b class="fc"><i class="no-highlight">125</i>&nbsp;            if(p.isDisconnected())</b>
+<i class="no-highlight">126</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">127</i>&nbsp;                result = &quot;DISCONNECT&quot;;</b>
+<b class="fc"><i class="no-highlight">128</i>&nbsp;                scores += &quot;0&quot;;</b>
+<i class="no-highlight">129</i>&nbsp;            }
+<i class="no-highlight">130</i>&nbsp;            else
+<i class="no-highlight">131</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">132</i>&nbsp;                scores += p.getScore();</b>
+<i class="no-highlight">133</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">134</i>&nbsp;        }</b>
+<b class="fc"><i class="no-highlight">135</i>&nbsp;        return encodeMessage(Protocol.BasicCommand.GAMEOVER.name(),</b>
+<i class="no-highlight">136</i>&nbsp;                result + scores);
+<i class="no-highlight">137</i>&nbsp;    }
+<i class="no-highlight">138</i>&nbsp;
+<i class="no-highlight">139</i>&nbsp;    /**
+<i class="no-highlight">140</i>&nbsp;     * Checks whether the game state is not a final one (WIN/DISCONNECT)
+<i class="no-highlight">141</i>&nbsp;     * @return whether the game is ongoing
+<i class="no-highlight">142</i>&nbsp;     */
+<i class="no-highlight">143</i>&nbsp;    private boolean gameOnGoing() {
+<b class="fc"><i class="no-highlight">144</i>&nbsp;        if(disconnect)</b>
+<i class="no-highlight">145</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">146</i>&nbsp;            return false;</b>
+<i class="no-highlight">147</i>&nbsp;        }
+<i class="no-highlight">148</i>&nbsp;
+<b class="fc"><i class="no-highlight">149</i>&nbsp;        if(!tilePoolController.isEmpty())</b>
+<i class="no-highlight">150</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">151</i>&nbsp;            return true;</b>
+<i class="no-highlight">152</i>&nbsp;        }
+<i class="no-highlight">153</i>&nbsp;
+<b class="nc"><i class="no-highlight">154</i>&nbsp;        for(PlayerSession p : players)</b>
+<i class="no-highlight">155</i>&nbsp;        {
+<b class="nc"><i class="no-highlight">156</i>&nbsp;         if(anyPossibleMoves(boardController.getBoardStateSnapshot(), p.getTiles()))</b>
+<b class="nc"><i class="no-highlight">157</i>&nbsp;             return true;</b>
+<b class="nc"><i class="no-highlight">158</i>&nbsp;        }</b>
+<i class="no-highlight">159</i>&nbsp;
+<b class="nc"><i class="no-highlight">160</i>&nbsp;        return false;</b>
+<i class="no-highlight">161</i>&nbsp;    }
+<i class="no-highlight">162</i>&nbsp;
+<i class="no-highlight">163</i>&nbsp;    /**
+<i class="no-highlight">164</i>&nbsp;     * Listens to the input from a player
+<i class="no-highlight">165</i>&nbsp;     * @param s the player session
+<i class="no-highlight">166</i>&nbsp;     * @param id the in-game player id
+<i class="no-highlight">167</i>&nbsp;     * @throws IOException in case the connection with the player interrupts
+<i class="no-highlight">168</i>&nbsp;     */
+<i class="no-highlight">169</i>&nbsp;    private void listen(PlayerSession s, int id) throws IOException {
+<b class="fc"><i class="no-highlight">170</i>&nbsp;        String message = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">171</i>&nbsp;        while(gameOn)</b>
+<i class="no-highlight">172</i>&nbsp;        {
+<i class="no-highlight">173</i>&nbsp;            try{
+<b class="fc"><i class="no-highlight">174</i>&nbsp;                message = s.getNextMessage();</b>
+<b class="fc"><i class="no-highlight">175</i>&nbsp;                synchronized (turn)</b>
+<i class="no-highlight">176</i>&nbsp;                {
+<b class="fc"><i class="no-highlight">177</i>&nbsp;                    if (currentPlayer == id) {</b>
+<b class="fc"><i class="no-highlight">178</i>&nbsp;                        s.addScore(doAction(message, s));</b>
+<b class="fc"><i class="no-highlight">179</i>&nbsp;                        passTurn();</b>
+<i class="no-highlight">180</i>&nbsp;                    } else {
+<b class="nc"><i class="no-highlight">181</i>&nbsp;                        s.sendMessage(encodeMessage(Protocol.BasicCommand.ERROR.name(), Protocol.Error.E009.name()));</b>
+<i class="no-highlight">182</i>&nbsp;                    }
+<b class="fc"><i class="no-highlight">183</i>&nbsp;                }</b>
+<i class="no-highlight">184</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">185</i>&nbsp;            catch (GameException e)</b>
+<i class="no-highlight">186</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">187</i>&nbsp;                s.sendMessage(encodeMessage(Protocol.BasicCommand.ERROR.name(), e.getError().name()));</b>
+<b class="fc"><i class="no-highlight">188</i>&nbsp;                passTurn();</b>
+<b class="fc"><i class="no-highlight">189</i>&nbsp;            } catch (IOException e) {</b>
+<i class="no-highlight">190</i>&nbsp;                // PLAYER DISCONNECTED
+<b class="fc"><i class="no-highlight">191</i>&nbsp;                disconnect = true;</b>
+<b class="fc"><i class="no-highlight">192</i>&nbsp;                gameOn = false;</b>
+<b class="fc"><i class="no-highlight">193</i>&nbsp;                s.disconnect();</b>
+<b class="fc"><i class="no-highlight">194</i>&nbsp;                broadcast(encodeMessage(Protocol.BasicCommand.PLAYERDISCONNECTED.name(),</b>
+<b class="fc"><i class="no-highlight">195</i>&nbsp;                        s.getName()));</b>
+<b class="fc"><i class="no-highlight">196</i>&nbsp;                turnEnd.release();</b>
+<b class="fc"><i class="no-highlight">197</i>&nbsp;                break;</b>
+<b class="fc"><i class="no-highlight">198</i>&nbsp;            }</b>
+<i class="no-highlight">199</i>&nbsp;        }
+<i class="no-highlight">200</i>&nbsp;    }
+<i class="no-highlight">201</i>&nbsp;
+<i class="no-highlight">202</i>&nbsp;    /**
+<i class="no-highlight">203</i>&nbsp;     * Turn is passed to the next player and announced
+<i class="no-highlight">204</i>&nbsp;     * @throws IOException in case there is a disconnection while sending the notifyturn message
+<i class="no-highlight">205</i>&nbsp;     */
+<i class="no-highlight">206</i>&nbsp;    private void passTurn() throws IOException {
+<b class="fc"><i class="no-highlight">207</i>&nbsp;        currentPlayer = (currentPlayer + 1) % players.size();</b>
+<b class="fc"><i class="no-highlight">208</i>&nbsp;        String playerName = players.get(currentPlayer).getName();</b>
+<b class="fc"><i class="no-highlight">209</i>&nbsp;        for(int j = 0; j &lt; players.size(); j++)</b>
+<i class="no-highlight">210</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">211</i>&nbsp;            int val = 0;</b>
+<b class="fc"><i class="no-highlight">212</i>&nbsp;            if(j == currentPlayer)</b>
+<i class="no-highlight">213</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">214</i>&nbsp;                val = 1;</b>
+<i class="no-highlight">215</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">216</i>&nbsp;            players.get(j)</b>
+<b class="fc"><i class="no-highlight">217</i>&nbsp;                    .sendMessage(encodeMessage(Protocol.BasicCommand.NOTIFYTURN.name(),</b>
+<i class="no-highlight">218</i>&nbsp;                            val + &quot;&quot;, playerName));
+<i class="no-highlight">219</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">220</i>&nbsp;        turnEnd.release();</b>
+<i class="no-highlight">221</i>&nbsp;    }
+<i class="no-highlight">222</i>&nbsp;
+<i class="no-highlight">223</i>&nbsp;    /**
+<i class="no-highlight">224</i>&nbsp;     * Broadcasts a message to all the players
+<i class="no-highlight">225</i>&nbsp;     * @param message the message
+<i class="no-highlight">226</i>&nbsp;     * @throws IOException in case any connection interrupts while sending the message
+<i class="no-highlight">227</i>&nbsp;     */
+<i class="no-highlight">228</i>&nbsp;    private void broadcast(String message) throws IOException
+<i class="no-highlight">229</i>&nbsp;    {
+<b class="fc"><i class="no-highlight">230</i>&nbsp;        for(PlayerSession s : players)</b>
+<i class="no-highlight">231</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">232</i>&nbsp;            if(!s.isDisconnected())</b>
+<i class="no-highlight">233</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">234</i>&nbsp;                s.sendMessage(message);</b>
+<i class="no-highlight">235</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">236</i>&nbsp;        }</b>
+<i class="no-highlight">237</i>&nbsp;    }
+<i class="no-highlight">238</i>&nbsp;
+<i class="no-highlight">239</i>&nbsp;    /**
+<i class="no-highlight">240</i>&nbsp;     * Does the specific action based on the input of a player
+<i class="no-highlight">241</i>&nbsp;     * @param message the player input
+<i class="no-highlight">242</i>&nbsp;     * @param s the player
+<i class="no-highlight">243</i>&nbsp;     * @return the score of the action
+<i class="no-highlight">244</i>&nbsp;     * @throws InvalidInputException
+<i class="no-highlight">245</i>&nbsp;     * @throws InitialWordNotOnCenterException
+<i class="no-highlight">246</i>&nbsp;     * @throws InvalidMoveException
+<i class="no-highlight">247</i>&nbsp;     * @throws NotEnoughTilesException
+<i class="no-highlight">248</i>&nbsp;     * @throws IOException
+<i class="no-highlight">249</i>&nbsp;     */
+<i class="no-highlight">250</i>&nbsp;    private int doAction(String message, PlayerSession s)
+<i class="no-highlight">251</i>&nbsp;            throws InvalidInputException, InitialWordNotOnCenterException, InvalidMoveException, NotEnoughTilesException, IOException {
+<b class="fc"><i class="no-highlight">252</i>&nbsp;        if(message == null)</b>
+<b class="nc"><i class="no-highlight">253</i>&nbsp;            return 0;</b>
+<i class="no-highlight">254</i>&nbsp;
+<b class="fc"><i class="no-highlight">255</i>&nbsp;        int score = 0;</b>
+<b class="fc"><i class="no-highlight">256</i>&nbsp;        String[] parts = message.split(String.valueOf(Protocol.UNIT_SEPARATOR));</b>
+<b class="fc"><i class="no-highlight">257</i>&nbsp;        if (Protocol.BasicCommand.valueOf(parts[0]) == Protocol.BasicCommand.MAKEMOVE)</b>
+<i class="no-highlight">258</i>&nbsp;        {
+<b class="fc"><i class="no-highlight">259</i>&nbsp;            if (parts.length &lt; 2) {</b>
+<b class="nc"><i class="no-highlight">260</i>&nbsp;                throw new InvalidMoveException(Protocol.Error.E003);</b>
+<i class="no-highlight">261</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">262</i>&nbsp;            String shouldReceiveTiles = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">263</i>&nbsp;            String informMessage = &quot;&quot;;</b>
+<b class="fc"><i class="no-highlight">264</i>&nbsp;            if (parts[1].equals(&quot;WORD&quot;)) {</b>
+<b class="fc"><i class="no-highlight">265</i>&nbsp;                if (parts.length != 5) {</b>
+<b class="nc"><i class="no-highlight">266</i>&nbsp;                    throw new InvalidMoveException(Protocol.Error.E003);</b>
+<i class="no-highlight">267</i>&nbsp;                }
+<b class="fc"><i class="no-highlight">268</i>&nbsp;                List&lt;Tile&gt; tiles = extractTiles(parts[2], parts[3], parts[4], boardController.getBoard());</b>
+<b class="fc"><i class="no-highlight">269</i>&nbsp;                if (tiles.size() == 0)</b>
+<b class="nc"><i class="no-highlight">270</i>&nbsp;                    throw new InvalidInputException(Protocol.Error.E005);</b>
+<b class="fc"><i class="no-highlight">271</i>&nbsp;                else if(!s.hasTiles(tiles))</b>
+<b class="nc"><i class="no-highlight">272</i>&nbsp;                    throw new InvalidInputException(Protocol.Error.E008);</b>
+<i class="no-highlight">273</i>&nbsp;
+<b class="fc"><i class="no-highlight">274</i>&nbsp;                score = boardController.handleMove(tiles);</b>
+<b class="fc"><i class="no-highlight">275</i>&nbsp;                s.removeTiles(tiles);</b>
+<b class="fc"><i class="no-highlight">276</i>&nbsp;                shouldReceiveTiles = tilePoolController.getTilesFromPool(tiles.size());</b>
+<b class="fc"><i class="no-highlight">277</i>&nbsp;                informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),</b>
+<i class="no-highlight">278</i>&nbsp;                        parts[1], parts[2], parts[3], parts[4]);
+<b class="fc"><i class="no-highlight">279</i>&nbsp;            } else if (parts[1].equals(&quot;SWAP&quot;)) {</b>
+<b class="nc"><i class="no-highlight">280</i>&nbsp;                if (parts.length != 3) {</b>
+<b class="nc"><i class="no-highlight">281</i>&nbsp;                    throw new InvalidMoveException(Protocol.Error.E003);</b>
+<i class="no-highlight">282</i>&nbsp;                }
+<b class="nc"><i class="no-highlight">283</i>&nbsp;                if (!s.hasTiles(parts[2])) {</b>
+<b class="nc"><i class="no-highlight">284</i>&nbsp;                    throw new InvalidMoveException(Protocol.Error.E008);</b>
+<i class="no-highlight">285</i>&nbsp;                }
+<b class="nc"><i class="no-highlight">286</i>&nbsp;                shouldReceiveTiles = tilePoolController.swapTiles(parts[2].toCharArray());</b>
+<b class="nc"><i class="no-highlight">287</i>&nbsp;                informMessage = encodeMessage(Protocol.BasicCommand.INFORMMOVE.name(), s.getName(),</b>
+<i class="no-highlight">288</i>&nbsp;                        parts[1], parts[2]);
+<i class="no-highlight">289</i>&nbsp;            }
+<i class="no-highlight">290</i>&nbsp;
+<b class="fc"><i class="no-highlight">291</i>&nbsp;            if(!shouldReceiveTiles.isEmpty())</b>
+<i class="no-highlight">292</i>&nbsp;            {
+<b class="fc"><i class="no-highlight">293</i>&nbsp;                s.sendMessage(encodeMessage(Protocol.BasicCommand.NEWTILES.name(), shouldReceiveTiles));</b>
+<b class="fc"><i class="no-highlight">294</i>&nbsp;                s.addTiles(shouldReceiveTiles);</b>
+<i class="no-highlight">295</i>&nbsp;            }
+<b class="fc"><i class="no-highlight">296</i>&nbsp;            broadcast(informMessage);</b>
+<b class="fc"><i class="no-highlight">297</i>&nbsp;        } else {</b>
+<b class="nc"><i class="no-highlight">298</i>&nbsp;            throw new InvalidMoveException(Protocol.Error.E002);</b>
+<i class="no-highlight">299</i>&nbsp;        }
+<b class="fc"><i class="no-highlight">300</i>&nbsp;        return score;</b>
+<i class="no-highlight">301</i>&nbsp;    }
+<i class="no-highlight">302</i>&nbsp;}
+</div>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+        var codeBlock = document.getElementById('sourceCode');
+
+        if (codeBlock) {
+            hljs.highlightBlock(codeBlock);
+        }
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-02-04 18:52</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ScrabbleWordChecker</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/highlight-idea.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">lib.checker.java</a>
+</div>
+
+<h1>Coverage Summary for Class: ScrabbleWordChecker (lib.checker.java)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">ScrabbleWordChecker$WordResponse</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;/*
+<i class="no-highlight">2</i>&nbsp; * COPIED HERE AS JAR WAS NOT USABLE
+<i class="no-highlight">3</i>&nbsp; */
+<i class="no-highlight">4</i>&nbsp;package lib.checker.java;
+<i class="no-highlight">5</i>&nbsp;
+<i class="no-highlight">6</i>&nbsp;public interface ScrabbleWordChecker {
+<i class="no-highlight">7</i>&nbsp;    /**
+<i class="no-highlight">8</i>&nbsp;     * Method can be used to check if a word is a valid Scrabble word
+<i class="no-highlight">9</i>&nbsp;     * according to the Collins Scrabble Dictionary
+<i class="no-highlight">10</i>&nbsp;     *
+<i class="no-highlight">11</i>&nbsp;     * @param word The word you want to check
+<i class="no-highlight">12</i>&nbsp;     * @return  a WordReponse containing the requested word and a description if the word can be found in dictionary;
+<i class="no-highlight">13</i>&nbsp;     *          null when the word isn&#39;t valid during a game of scrabble
+<i class="no-highlight">14</i>&nbsp;     */
+<i class="no-highlight">15</i>&nbsp;    WordResponse isValidWord(String word);
+<i class="no-highlight">16</i>&nbsp;
+<i class="no-highlight">17</i>&nbsp;    /**
+<i class="no-highlight">18</i>&nbsp;     * Response object for when check a word.
+<i class="no-highlight">19</i>&nbsp;     * Contains the actual word, together with a description of the word according to the collins scrabble Dicitonary
+<i class="no-highlight">20</i>&nbsp;     */
+<i class="no-highlight">21</i>&nbsp;    class WordResponse {
+<b class="fc"><i class="no-highlight">22</i>&nbsp;        public WordResponse(String word, String description){</b>
+<b class="fc"><i class="no-highlight">23</i>&nbsp;            this.word = word;</b>
+<b class="fc"><i class="no-highlight">24</i>&nbsp;            this.description = description;</b>
+<i class="no-highlight">25</i>&nbsp;        }
+<i class="no-highlight">26</i>&nbsp;
+<i class="no-highlight">27</i>&nbsp;        public String getWord(){
+<b class="fc"><i class="no-highlight">28</i>&nbsp;            return this.word;</b>
+<i class="no-highlight">29</i>&nbsp;        }
+<i class="no-highlight">30</i>&nbsp;        private String word;
+<i class="no-highlight">31</i>&nbsp;
+<i class="no-highlight">32</i>&nbsp;        public String getDescription(){
+<b class="fc"><i class="no-highlight">33</i>&nbsp;            return this.description;</b>
+<i class="no-highlight">34</i>&nbsp;        }
+<i class="no-highlight">35</i>&nbsp;        private String description;
+<i class="no-highlight">36</i>&nbsp;
+<i class="no-highlight">37</i>&nbsp;        public String toString(){
+<b class="fc"><i class="no-highlight">38</i>&nbsp;            return this.getWord() + &quot;: &quot; + this.getDescription();</b>
+<i class="no-highlight">39</i>&nbsp;        }
+<i class="no-highlight">40</i>&nbsp;    }
+<i class="no-highlight">41</i>&nbsp;}
+</div>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+        var codeBlock = document.getElementById('sourceCode');
+
+        if (codeBlock) {
+            hljs.highlightBlock(codeBlock);
+        }
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-02-04 19:12</div>
+</div>
+</body>
+</html>

@@ -23,3 +23,6 @@ Instructions to open and use this ScrabbleGame.
 
 Rules:
 - Always start with a word that will cover the center tile.
+- At the begining (when you join a server and a game) make sure you write a
+a name and you write a number 2-4. If you leave blanc the server won't be able
+to continue from there and it breaks.
